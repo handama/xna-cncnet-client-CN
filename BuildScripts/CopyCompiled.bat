@@ -35,6 +35,8 @@ copy Newtonsoft.Json.dll %commonBinaries%Newtonsoft.Json.dll
 copy DiscordRPC.dll %commonBinaries%DiscordRPC.dll
 copy lzo.net.dll %commonBinaries%lzo.net.dll
 copy OpenMcdf.dll %commonBinaries%OpenMcdf.dll
+copy JWT.dll %commonBinaries%JWT.dll
+copy System.Net.Http.dll %commonBinaries%System.Net.Http.dll
 
 echo Windows
 copy DTAClient.exe %cr%clientdx.exe

@@ -7,6 +7,7 @@ using DTAClient.Domain.Multiplayer.CnCNet;
 using DTAClient.DXGUI.Multiplayer;
 using DTAClient.DXGUI.Multiplayer.CnCNet;
 using DTAClient.DXGUI.Multiplayer.GameLobby;
+using DTAClient.DXGUI.Multiplayer.QuickMatch;
 using DTAClient.Online;
 using DTAConfig;
 using Microsoft.Xna.Framework;
@@ -14,6 +15,7 @@ using Rampastring.XNAUI;
 using System.Threading.Tasks;
 using Rampastring.Tools;
 using ClientUpdater;
+using Rampastring.XNAUI.XNAControls;
 using SkirmishLobby = DTAClient.DXGUI.Multiplayer.GameLobby.SkirmishLobby;
 
 namespace DTAClient.DXGUI.Generic
@@ -79,26 +81,20 @@ namespace DTAClient.DXGUI.Generic
 
         private void LoadMaps()
         {
-            mapLoader = new MapLoader();
+            mapLoader = MapLoader.GetInstance();
             mapLoader.LoadMaps();
         }
 
         private void Finish()
         {
-            ProgramConstants.GAME_VERSION = ClientConfiguration.Instance.ModMode ? 
+            ProgramConstants.GAME_VERSION = ClientConfiguration.Instance.ModMode ?
                 "N/A" : Updater.GameVersion;
 
             DiscordHandler discordHandler = null;
             if (!string.IsNullOrEmpty(ClientConfiguration.Instance.DiscordAppId))
                 discordHandler = new DiscordHandler(WindowManager);
 
-            ClientGUICreator.Instance.AddControl(typeof(GameLobbyCheckBox));
-            ClientGUICreator.Instance.AddControl(typeof(GameLobbyDropDown));
-            ClientGUICreator.Instance.AddControl(typeof(MapPreviewBox));
-            ClientGUICreator.Instance.AddControl(typeof(GameLaunchButton));
-            ClientGUICreator.Instance.AddControl(typeof(ChatListBox));
-            ClientGUICreator.Instance.AddControl(typeof(XNAChatTextBox));
-            ClientGUICreator.Instance.AddControl(typeof(PlayerExtraOptionsPanel));
+            DeclareCustomControls();
 
             var gameCollection = new GameCollection();
             gameCollection.Initialize(GraphicsDevice);
@@ -109,7 +105,7 @@ namespace DTAClient.DXGUI.Generic
             var cncnetManager = new CnCNetManager(WindowManager, gameCollection, cncnetUserData);
             var tunnelHandler = new TunnelHandler(WindowManager, cncnetManager);
             var privateMessageHandler = new PrivateMessageHandler(cncnetManager, cncnetUserData);
-            
+
             var topBar = new TopBar(WindowManager, cncnetManager, privateMessageHandler);
 
             var optionsWindow = new OptionsWindow(WindowManager, gameCollection, topBar);
@@ -120,22 +116,25 @@ namespace DTAClient.DXGUI.Generic
 
             var cncnetGameLobby = new CnCNetGameLobby(WindowManager,
                 "MultiplayerGameLobby", topBar, cncnetManager, tunnelHandler, gameCollection, cncnetUserData, mapLoader, discordHandler, pmWindow);
-            var cncnetGameLoadingLobby = new CnCNetGameLoadingLobby(WindowManager, 
+            var cncnetGameLoadingLobby = new CnCNetGameLoadingLobby(WindowManager,
                 topBar, cncnetManager, tunnelHandler, mapLoader.GameModes, gameCollection, discordHandler);
-            var cncnetLobby = new CnCNetLobby(WindowManager, cncnetManager, 
+            var cncnetLobby = new CnCNetLobby(WindowManager, cncnetManager,
                 cncnetGameLobby, cncnetGameLoadingLobby, topBar, pmWindow, tunnelHandler,
                 gameCollection, cncnetUserData, optionsWindow);
             var gipw = new GameInProgressWindow(WindowManager);
 
             var skirmishLobby = new SkirmishLobby(WindowManager, topBar, mapLoader, discordHandler);
+            var quickMatchWindow = new QuickMatchWindow(WindowManager, topBar);
 
             topBar.SetSecondarySwitch(cncnetLobby);
 
-            var mainMenu = new MainMenu(WindowManager, skirmishLobby, lanLobby,
+            var mainMenu = new MainMenu(WindowManager, skirmishLobby, quickMatchWindow, lanLobby,
                 topBar, optionsWindow, cncnetLobby, cncnetManager, discordHandler);
             WindowManager.AddAndInitializeControl(mainMenu);
 
             DarkeningPanel.AddAndInitializeWithControl(WindowManager, skirmishLobby);
+
+            DarkeningPanel.AddAndInitializeWithControl(WindowManager, quickMatchWindow);
 
             DarkeningPanel.AddAndInitializeWithControl(WindowManager, cncnetGameLoadingLobby);
 
@@ -152,9 +151,11 @@ namespace DTAClient.DXGUI.Generic
 
             topBar.SetTertiarySwitch(pmWindow);
             topBar.SetOptionsWindow(optionsWindow);
+            topBar.SetQuickMatchWindow(quickMatchWindow);
 
             WindowManager.AddAndInitializeControl(gipw);
             skirmishLobby.Disable();
+            quickMatchWindow.Disable();
             cncnetLobby.Disable();
             cncnetGameLobby.Disable();
             cncnetGameLoadingLobby.Disable();
@@ -181,6 +182,22 @@ namespace DTAClient.DXGUI.Generic
             WindowManager.RemoveControl(this);
 
             Cursor.Visible = visibleSpriteCursor;
+        }
+
+        private static void DeclareCustomControls()
+        {
+            ClientGUICreator.Instance.AddControl(typeof(GameLobbyCheckBox));
+            ClientGUICreator.Instance.AddControl(typeof(GameLobbyDropDown));
+            ClientGUICreator.Instance.AddControl(typeof(MapPreviewBox));
+            ClientGUICreator.Instance.AddControl(typeof(GameLaunchButton));
+            ClientGUICreator.Instance.AddControl(typeof(ChatListBox));
+            ClientGUICreator.Instance.AddControl(typeof(XNAChatTextBox));
+            ClientGUICreator.Instance.AddControl(typeof(XNAPasswordBox));
+            ClientGUICreator.Instance.AddControl(typeof(PlayerExtraOptionsPanel));
+            ClientGUICreator.Instance.AddControl(typeof(QuickMatchLoginPanel));
+            ClientGUICreator.Instance.AddControl(typeof(QuickMatchLobbyPanel));
+            ClientGUICreator.Instance.AddControl(typeof(QuickMatchMapList));
+            ClientGUICreator.Instance.AddControl(typeof(QuickMatchStatusMessageWindow));
         }
 
         public override void Update(GameTime gameTime)

@@ -5,6 +5,7 @@ using DTAClient.Domain.Multiplayer.CnCNet;
 using DTAClient.DXGUI.Multiplayer;
 using DTAClient.DXGUI.Multiplayer.CnCNet;
 using DTAClient.DXGUI.Multiplayer.GameLobby;
+using DTAClient.DXGUI.Multiplayer.QuickMatch;
 using DTAClient.Online;
 using DTAConfig;
 using Localization;
@@ -36,12 +37,20 @@ namespace DTAClient.DXGUI.Generic
         /// <summary>
         /// Creates a new instance of the main menu.
         /// </summary>
-        public MainMenu(WindowManager windowManager, SkirmishLobby skirmishLobby,
-            LANLobby lanLobby, TopBar topBar, OptionsWindow optionsWindow,
+        public MainMenu(
+            WindowManager windowManager,
+            SkirmishLobby skirmishLobby,
+            QuickMatchWindow quickMatchWindow,
+            LANLobby lanLobby,
+            TopBar topBar,
+            OptionsWindow optionsWindow,
             CnCNetLobby cncnetLobby,
-            CnCNetManager connectionManager, DiscordHandler discordHandler) : base(windowManager)
+            CnCNetManager connectionManager,
+            DiscordHandler discordHandler
+        ) : base(windowManager)
         {
             this.skirmishLobby = skirmishLobby;
+            this.quickMatchWindow = quickMatchWindow;
             this.lanLobby = lanLobby;
             this.topBar = topBar;
             this.connectionManager = connectionManager;
@@ -61,6 +70,8 @@ namespace DTAClient.DXGUI.Generic
         private CnCNetLobby cncnetLobby;
 
         private SkirmishLobby skirmishLobby;
+
+        private QuickMatchWindow quickMatchWindow;
 
         private LANLobby lanLobby;
 
@@ -106,6 +117,7 @@ namespace DTAClient.DXGUI.Generic
         private XNAClientButton btnLoadGame;
         private XNAClientButton btnSkirmish;
         private XNAClientButton btnCnCNet;
+        private XNAClientButton btnQuickmatch;
         private XNAClientButton btnLan;
         private XNAClientButton btnOptions;
         private XNAClientButton btnMapEditor;
@@ -153,6 +165,11 @@ namespace DTAClient.DXGUI.Generic
             btnCnCNet.HoverTexture = AssetLoader.LoadTexture("MainMenu/cncnet_c.png");
             btnCnCNet.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
             btnCnCNet.LeftClick += BtnCnCNet_LeftClick;
+
+            btnQuickmatch = new XNAClientButton(WindowManager);
+            btnQuickmatch.Name = nameof(btnQuickmatch);
+            btnQuickmatch.LeftClick += BtnQuickmatch_LeftClick;
+            btnQuickmatch.Disable();
 
             btnLan = new XNAClientButton(WindowManager);
             btnLan.Name = nameof(btnLan);
@@ -225,6 +242,7 @@ namespace DTAClient.DXGUI.Generic
             AddChild(btnLoadGame);
             AddChild(btnSkirmish);
             AddChild(btnCnCNet);
+            AddChild(btnQuickmatch);
             AddChild(btnLan);
             AddChild(btnOptions);
             AddChild(btnMapEditor);
@@ -780,6 +798,8 @@ namespace DTAClient.DXGUI.Generic
         }
 
         private void BtnCnCNet_LeftClick(object sender, EventArgs e) => topBar.SwitchToSecondary();
+
+        private void BtnQuickmatch_LeftClick(object sender, EventArgs e) => quickMatchWindow.Enable();
 
         private void BtnSkirmish_LeftClick(object sender, EventArgs e)
         {
