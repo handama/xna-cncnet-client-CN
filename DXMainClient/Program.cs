@@ -60,6 +60,8 @@ namespace DTAClient
             "DiscordRPC",
             "lzo.net",
             "OpenMcdf",
+            "JWT",
+            "System.Net.Http"
         };
 
         static List<string> SPECIFIC_LIBRARIES = new List<string>()
