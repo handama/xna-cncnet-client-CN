@@ -14,6 +14,7 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
 
         private readonly QmLadderMap ladderMap;
         private readonly QmLadder ladder;
+        private XNAClientCheckBox cbVeto;
         private XNAClientDropDown ddSide;
         private XNAPanel panelMap;
         private XNALabel lblMap;
@@ -28,7 +29,7 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
             set
             {
                 selected = value;
-                BackgroundTexture = selected ? AssetLoader.CreateTexture(new Color(255, 0, 0), 1, 1) : null;
+                panelMap.BackgroundTexture = selected ? AssetLoader.CreateTexture(new Color(255, 0, 0), 1, 1) : null;
             }
         }
 
@@ -43,22 +44,24 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
         {
             base.Initialize();
 
-            int ratioDivider = 4;
+            const int ratioDivider = 4;
+
+            cbVeto = new XNAClientCheckBox(WindowManager);
+            cbVeto.ClientRectangle = new Rectangle(0, 0, QuickMatchMapList.ItemHeight, QuickMatchMapList.ItemHeight);
+            AddChild(cbVeto);
 
             ddSide = new XNAClientDropDown(WindowManager);
-            ddSide.ClientRectangle = new Rectangle(0, 0, Width / ratioDivider, QuickMatchMapList.ItemHeight);
+            ddSide.ClientRectangle = new Rectangle(cbVeto.Right, 0, (Width - cbVeto.Width) / ratioDivider, QuickMatchMapList.ItemHeight);
             AddChild(ddSide);
 
             panelMap = new XNAPanel(WindowManager);
             panelMap.DrawBorders = false;
-            panelMap.ClientRectangle = new Rectangle(ddSide.Right + 4, 0, Width - ddSide.Width - 4, QuickMatchMapList.ItemHeight);
+            panelMap.ClientRectangle = new Rectangle(ddSide.Right, 0, (Width - cbVeto.Width) - ddSide.Width - 4, QuickMatchMapList.ItemHeight);
             panelMap.LeftClick += (sender, args) => LeftClickMap?.Invoke(this, EventArgs.Empty);
             AddChild(panelMap);
 
             lblMap = new XNALabel(WindowManager);
-            lblMap.ClientRectangle = new Rectangle(0, 0, panelMap.Width, panelMap.Height);
-            lblMap.AnchorPoint = new Vector2(0, (float)panelMap.Height / 2);
-            lblMap.TextAnchor = LabelTextAnchorInfo.VERTICAL_CENTER;
+            lblMap.ClientRectangle = new Rectangle(4, 2, panelMap.Width, panelMap.Height);
             lblMap.LeftClick += (sender, args) => LeftClickMap?.Invoke(this, EventArgs.Empty);
             panelMap.AddChild(lblMap);
 
