@@ -87,6 +87,10 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
             lblMap.Text = ladderMap.Description;
         }
 
+        public void SetOpenUp(bool openUp) => ddSide.OpenUp = openUp;
+
+        public int OpenedDownWindowBottom => GetWindowRectangle().Bottom + (ddSide.ItemHeight * ddSide.Items.Count);
+
         public bool ContainsPointVertical(Point point) => Y < point.Y && Y + Height < point.Y;
     }
 }

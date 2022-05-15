@@ -39,24 +39,28 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
             AddChild(item);
 
             RefreshScrollbar();
+            RefreshItemOpenUp(item);
         }
 
         private void RefreshItemLocations()
         {
             int index = 0;
             foreach (QuickMatchMapItem quickMatchMapItem in MapItemChildren)
+            {
                 quickMatchMapItem.Y = (index++ * ItemHeight) - scrollBar.ViewTop;
+                RefreshItemOpenUp(quickMatchMapItem);
+            }
         }
 
-        private void ScrollBarScrolled(object sender, EventArgs eventArgs)
-        {
-            RefreshItemLocations();
-        }
+        private void RefreshItemOpenUp(QuickMatchMapItem quickMatchMapItem) 
+            => quickMatchMapItem.SetOpenUp(quickMatchMapItem.OpenedDownWindowBottom > scrollBar.GetWindowRectangle().Bottom);
+
+        private void ScrollBarScrolled(object sender, EventArgs eventArgs) => RefreshItemLocations();
 
         public void RefreshScrollbar()
         {
             scrollBar.Length = MapItemChildren.Count() * ItemHeight;
-            scrollBar.DisplayedPixelCount = this.Height - 4;
+            scrollBar.DisplayedPixelCount = Height - 4;
             scrollBar.Refresh();
         }
 
