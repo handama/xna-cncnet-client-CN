@@ -11,6 +11,7 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
 {
     public class QuickMatchMapList : INItializableWindow
     {
+        private const int ScrollRate = 6;
         public const int ItemHeight = 22;
         public event EventHandler<QmMapSelectedEventArgs> MapSelected;
 
@@ -30,6 +31,27 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
             scrollBar.ClientRectangle = new Rectangle(Width - scrollBar.ScrollWidth - 1, 1, scrollBar.ScrollWidth, Height - 2);
             scrollBar.Scrolled += ScrollBarScrolled;
             AddChild(scrollBar);
+
+            MouseScrolled += OnMouseScrolled;
+        }
+
+        private void OnMouseScrolled(object sender, EventArgs e)
+        {
+            int scrollWheelValue = Cursor.ScrollWheelValue;
+            int viewTop = scrollBar.ViewTop - (scrollWheelValue * ScrollRate);
+            int maxViewTop = scrollBar.Length - scrollBar.DisplayedPixelCount;
+            
+            if (viewTop < 0)
+                viewTop = 0;
+            else if (viewTop > maxViewTop)
+                viewTop = maxViewTop;
+            
+            if (viewTop == scrollBar.ViewTop)
+                return;
+            
+            scrollBar.ViewTop = viewTop;
+            RefreshScrollbar();
+            RefreshItemLocations();
         }
 
         public void AddItem(QuickMatchMapItem item)
