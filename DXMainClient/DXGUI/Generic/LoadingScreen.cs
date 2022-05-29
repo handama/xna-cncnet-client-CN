@@ -192,6 +192,7 @@ namespace DTAClient.DXGUI.Generic
             ClientGUICreator.Instance.AddControl(typeof(GameLaunchButton));
             ClientGUICreator.Instance.AddControl(typeof(ChatListBox));
             ClientGUICreator.Instance.AddControl(typeof(XNAChatTextBox));
+            ClientGUICreator.Instance.AddControl(typeof(XNAScrollBar));
             ClientGUICreator.Instance.AddControl(typeof(XNAPasswordBox));
             ClientGUICreator.Instance.AddControl(typeof(PlayerExtraOptionsPanel));
             ClientGUICreator.Instance.AddControl(typeof(QuickMatchLoginPanel));

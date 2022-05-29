@@ -549,7 +549,7 @@
     <Compile Include="DXGUI\Multiplayer\CnCNet\PrivateMessageNotificationBox.cs" />
     <Compile Include="DXGUI\Multiplayer\CnCNet\PrivateMessagingPanel.cs" />
     <Compile Include="DXGUI\Multiplayer\CnCNet\PrivateMessagingWindow.cs" />
-    <Compile Include="DXGUI\Multiplayer\QuickMatch\QuickMatchMapItem.cs" />
+    <Compile Include="DXGUI\Multiplayer\QuickMatch\QuickMatchMapListItem.cs" />
     <Compile Include="DXGUI\Multiplayer\QuickMatch\QuickMatchMapList.cs" />
     <Compile Include="DXGUI\Multiplayer\QuickMatch\QuickMatchStatusMessageWindow.cs" />
     <Compile Include="DXGUI\Multiplayer\QuickMatch\QuickMatchWindow.cs" />

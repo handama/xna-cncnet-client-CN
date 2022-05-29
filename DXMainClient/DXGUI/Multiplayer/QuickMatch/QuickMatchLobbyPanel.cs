@@ -39,7 +39,7 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
 
             base.Initialize();
 
-            mapList = FindChild<QuickMatchMapList>(nameof(mapList));
+            mapList = FindChild<QuickMatchMapList>(nameof(QuickMatchMapList));
             mapList.MapSelected += MapSelected;
 
             btnLogout = FindChild<XNAClientButton>(nameof(btnLogout));
@@ -176,7 +176,7 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
             var ladder = quickMatchService.GetLadderForId(selectedUserAccount.LadderId);
 
             foreach (QmLadderMap ladderMap in ladderMaps)
-                mapList.AddItem(new QuickMatchMapItem(WindowManager, ladderMap, ladder));
+                mapList.AddItem(new QuickMatchMapListItem(WindowManager, ladderMap, ladder));
         }
 
         /// <summary>

@@ -8,7 +8,7 @@ using Rampastring.XNAUI.XNAControls;
 
 namespace DTAClient.DXGUI.Multiplayer.QuickMatch
 {
-    public class QuickMatchMapItem : XNAPanel
+    public class QuickMatchMapListItem : XNAPanel
     {
         public event EventHandler LeftClickMap;
 
@@ -18,6 +18,9 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
         private XNAClientDropDown ddSide;
         private XNAPanel panelMap;
         private XNALabel lblMap;
+
+        private XNAPanel topBorder;
+        private XNAPanel bottomBorder;
 
         public QmMap Map => ladderMap.Map;
 
@@ -33,7 +36,7 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
             }
         }
 
-        public QuickMatchMapItem(WindowManager windowManager, QmLadderMap ladderMap, QmLadder ladder) : base(windowManager)
+        public QuickMatchMapListItem(WindowManager windowManager, QmLadderMap ladderMap, QmLadder ladder) : base(windowManager)
         {
             this.ladderMap = ladderMap;
             this.ladder = ladder;
@@ -43,29 +46,43 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
         public override void Initialize()
         {
             base.Initialize();
+            DrawBorders = false;
 
-            const int ratioDivider = 4;
+            topBorder = new XNAPanel(WindowManager);
+            topBorder.DrawBorders = true;
+            AddChild(topBorder);
+
+            bottomBorder = new XNAPanel(WindowManager);
+            bottomBorder.DrawBorders = true;
+            AddChild(bottomBorder);
 
             cbVeto = new XNAClientCheckBox(WindowManager);
-            cbVeto.ClientRectangle = new Rectangle(0, 0, QuickMatchMapList.ItemHeight, QuickMatchMapList.ItemHeight);
-            AddChild(cbVeto);
 
             ddSide = new XNAClientDropDown(WindowManager);
-            ddSide.ClientRectangle = new Rectangle(cbVeto.Right, 0, (Width - cbVeto.Width) / ratioDivider, QuickMatchMapList.ItemHeight);
             AddChild(ddSide);
 
             panelMap = new XNAPanel(WindowManager);
-            panelMap.DrawBorders = false;
-            panelMap.ClientRectangle = new Rectangle(ddSide.Right, 0, (Width - cbVeto.Width) - ddSide.Width - 4, QuickMatchMapList.ItemHeight);
             panelMap.LeftClick += (sender, args) => LeftClickMap?.Invoke(this, EventArgs.Empty);
+            panelMap.DrawBorders = false;
             AddChild(panelMap);
 
             lblMap = new XNALabel(WindowManager);
-            lblMap.ClientRectangle = new Rectangle(4, 2, panelMap.Width, panelMap.Height);
             lblMap.LeftClick += (sender, args) => LeftClickMap?.Invoke(this, EventArgs.Empty);
+            lblMap.ClientRectangle = new Rectangle(4, 2, panelMap.Width, panelMap.Height);
             panelMap.AddChild(lblMap);
+            AddChild(cbVeto);
 
             InitUI();
+        }
+
+        public void SetLocations(Rectangle vetoR, Rectangle ddSideR, Rectangle mapR)
+        {
+            cbVeto.ClientRectangle = vetoR;
+            ddSide.ClientRectangle = ddSideR;
+            panelMap.ClientRectangle = mapR;
+
+            topBorder.ClientRectangle = new Rectangle(panelMap.X, panelMap.Y, panelMap.Width, 1);
+            bottomBorder.ClientRectangle = new Rectangle(panelMap.X, panelMap.Bottom, panelMap.Width, 1);
         }
 
         private void InitUI()

@@ -49,7 +49,7 @@ Basic control properties cannot use constants
 `RemapColor`  
 
 #### XNAPanel
-_(inherits XNAControl)_
+_(inherits [XNAControl](#xnacontrol))_
 
 `BorderColor`  
 `DrawMode`  
@@ -60,12 +60,12 @@ _(inherits XNAControl)_
 `Padding`  
 
 #### XNAExtraPanel
-_(inherits XNAPanel)_
+_(inherits [XNAPanel](#xnapanel))_
 
 `BackgroundTexture`  
 
 #### XNALabel
-_(inherits XNAControl)_
+_(inherits [XNAControl](#xnacontrol))_
 
 `RemapColor`  
 `TextColor`  
@@ -75,7 +75,7 @@ _(inherits XNAControl)_
 `TextShadowDistance`  
 
 #### XNAButton
-_(inherits XNAControl)_
+_(inherits [XNAControl](#xnacontrol))_
 
 `TextColorIdle`  
 `TextColorHover`  
@@ -89,18 +89,18 @@ _(inherits XNAControl)_
 `TextShadowDistance`  
 
 #### XNAClientButton
-_(inherits XNAButton)_
+_(inherits [XNAButton](#xnabutton))_
 
 `MatchTextureSize`  
 
 #### XNALinkButton
-_(inherits XNAClientButton)_
+_(inherits [XNAClientButton](#xnaclientbutton))_
 
 `URL`  
 `ToolTip` = {string} tooltip for checkbox. '@' can be used for newlines  
 
 #### XNACheckbox
-_(inherits XNAControl)_
+_(inherits [XNAControl](#xnacontrol))_
 
 `FontIndex`  
 `IdleColor`  
@@ -110,12 +110,12 @@ _(inherits XNAControl)_
 `Checked`  
 
 #### XNAClientCheckbox
-_(inherits XNACheckbox)_
+_(inherits [XNACheckbox](#xnacheckbox))_
 
 `ToolTip` = {string} tooltip for checkbox. '@' can be used for newlines
 
 #### XNADropDown
-_(inherits XNAControl)_
+_(inherits [XNAControl](#xnacontrol))_
 
 `OpenUp`  
 `DropDownTexture`  
@@ -130,12 +130,12 @@ _(inherits XNAControl)_
 `OptionN`  
 
 #### XNAClientDropDown
-_(inherits XNADropDown)_
+_(inherits [XNADropDown](#xnadropdown))_
 
 `ToolTip` = {string} tooltip for checkbox. '@' can be used for newlines  
 
 #### XNATabControl
-_(inherits XNAControl)_
+_(inherits [XNAControl](#xnacontrol))_
 
 `RemapColor`  
 `TextColor`  
@@ -143,7 +143,7 @@ _(inherits XNAControl)_
 `RemoveTabIndexN`  
 
 #### XNATextBox
-_(inherits XNAControl)_
+_(inherits [XNAControl](#xnacontrol))_
 
 `MaximumTextLength`  
 
