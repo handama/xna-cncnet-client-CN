@@ -435,6 +435,7 @@
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmLoginEventArgs.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmMapSelectedEventArgs.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmSettings.cs" />
+    <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmUserSettings.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmData.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmLadder.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmLadderMap.cs" />
@@ -450,6 +451,7 @@
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QuickMatchApiService.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QuickMatchService.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QuickMatchSettingsService.cs" />
+    <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QuickMatchUserSettingsService.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QuickMatchStatusMessage.cs" />
     <Compile Include="Domain\Multiplayer\CoopHouseInfo.cs" />
     <Compile Include="Domain\Multiplayer\CoopMapInfo.cs" />

@@ -9,16 +9,14 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
 {
     public class QuickMatchApiService
     {
-        private const string BaseUrl = "https://ladder.cncnet.org";
-        private const string RoutePrefix = "/api/v1";
-        private static readonly string LoginUrl = $"{RoutePrefix}/auth/login";
-        private static readonly string RefreshUrl = $"{RoutePrefix}/auth/refresh";
-        private static readonly string ServerStatusUrl = $"{RoutePrefix}/ping";
-        private static readonly string GetUserAccountsUrl = $"{RoutePrefix}/user/account";
-        private static readonly string GetLaddersUrl = $"{RoutePrefix}/ladder";
-        private static readonly string GetLadderMapsUrlFormat = RoutePrefix + "/qm/ladder/{0}/maps";
-
+        private readonly QmSettings qmSettings;
         private string _token;
+
+        public QuickMatchApiService()
+        {
+            var settingsService = new QuickMatchSettingsService();
+            qmSettings = settingsService.LoadSettings();
+        }
 
         public void SetToken(string token)
         {
@@ -28,7 +26,7 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
         public async Task<IEnumerable<QmLadderMap>> FetchLadderMapsForAbbrAsync(string ladderAbbreviation)
         {
             var httpClient = CreateAuthenticatedClient();
-            string url = string.Format(GetLadderMapsUrlFormat, ladderAbbreviation);
+            string url = string.Format(qmSettings.GetLadderMapsUrl, ladderAbbreviation);
             var response = await httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
                 throw new ClientException($"Error fetching ladder maps: {response.ReasonPhrase}");
@@ -39,7 +37,7 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
         public async Task<IEnumerable<QmUserAccount>> FetchUserAccountsAsync()
         {
             var httpClient = CreateAuthenticatedClient();
-            var response = await httpClient.GetAsync(GetUserAccountsUrl);
+            var response = await httpClient.GetAsync(qmSettings.GetUserAccountsUrl);
             if (!response.IsSuccessStatusCode)
                 throw new ClientException($"Error fetching user accounts: {response.ReasonPhrase}");
 
@@ -49,7 +47,7 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
         public async Task<IEnumerable<QmLadder>> FetchLaddersAsync()
         {
             var httpClient = CreateAuthenticatedClient();
-            var response = await httpClient.GetAsync(GetLaddersUrl);
+            var response = await httpClient.GetAsync(qmSettings.GetLaddersUrl);
             if (!response.IsSuccessStatusCode)
                 throw new ClientException($"Error fetching ladders: {response.ReasonPhrase}");
 
@@ -64,7 +62,7 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
                 Email = email,
                 Password = password
             });
-            var response = await httpClient.PostAsync(LoginUrl, postBodyContent);
+            var response = await httpClient.PostAsync(qmSettings.LoginUrl, postBodyContent);
             if (!response.IsSuccessStatusCode)
                 throw new ClientException($"Error logging in: {response.ReasonPhrase}");
 
@@ -76,7 +74,7 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
         public async Task<QmAuthData> RefreshAsync()
         {
             var httpClient = CreateAuthenticatedClient();
-            var response = await httpClient.GetAsync(RefreshUrl);
+            var response = await httpClient.GetAsync(qmSettings.RefreshUrl);
             if (!response.IsSuccessStatusCode)
                 throw new ClientException($"Error refreshing token: {response.ReasonPhrase}");
 
@@ -88,15 +86,15 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
         public bool IsServerAvailable()
         {
             var httpClient = CreateAuthenticatedClient();
-            var response = httpClient.GetAsync(ServerStatusUrl).Result;
+            var response = httpClient.GetAsync(qmSettings.ServerStatusUrl).Result;
             return response.IsSuccessStatusCode;
         }
 
-        private static HttpClient CreateHttpClient()
+        private HttpClient CreateHttpClient()
         {
             var httpClient = new HttpClient
             {
-                BaseAddress = new Uri(BaseUrl)
+                BaseAddress = new Uri(qmSettings.BaseUrl)
             };
 
             return httpClient;

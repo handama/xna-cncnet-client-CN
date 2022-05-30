@@ -14,9 +14,9 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
 {
     public class QuickMatchService
     {
-        private readonly QuickMatchSettingsService settingsService;
+        private readonly QuickMatchUserSettingsService userSettingsService;
         private readonly QuickMatchApiService apiService;
-        private readonly QmSettings qmSettings;
+        private readonly QmUserSettings qmUserSettings;
         private readonly QmData qmData;
 
         private static QuickMatchService Instance;
@@ -27,9 +27,9 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
 
         private QuickMatchService()
         {
-            settingsService = new QuickMatchSettingsService();
+            userSettingsService = new QuickMatchUserSettingsService();
             apiService = new QuickMatchApiService();
-            qmSettings = settingsService.LoadSettings();
+            qmUserSettings = userSettingsService.LoadSettings();
             qmData = new QmData();
         }
 
@@ -67,8 +67,8 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
         /// </summary>
         public void Logout()
         {
-            settingsService.ClearAuthData();
-            settingsService.SaveSettings();
+            userSettingsService.ClearAuthData();
+            userSettingsService.SaveSettings();
             LoginEvent?.Invoke(this, new QmLoginEventArgs(QmLoginEventStatusEnum.Logout));
         }
 
@@ -100,20 +100,20 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
 
         public QmLadder GetLadderForId(int ladderId) => qmData.Ladders.FirstOrDefault(l => l.Id == ladderId);
 
-        public string GetCachedEmail() => qmSettings.Email;
+        public string GetCachedEmail() => qmUserSettings.Email;
 
-        public string GetCachedLadder() => qmSettings.Ladder;
+        public string GetCachedLadder() => qmUserSettings.Ladder;
 
         public bool IsServerAvailable() => apiService.IsServerAvailable();
 
         public bool IsLoggedIn()
         {
-            if (qmSettings.AuthData == null)
+            if (qmUserSettings.AuthData == null)
                 return false;
 
             try
             {
-                DecodeToken(qmSettings.AuthData.Token);
+                DecodeToken(qmUserSettings.AuthData.Token);
             }
             catch (TokenExpiredException)
             {
@@ -126,15 +126,15 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
                 return false;
             }
 
-            apiService.SetToken(qmSettings.AuthData.Token);
+            apiService.SetToken(qmUserSettings.AuthData.Token);
 
             return true;
         }
 
         public void SetLadder(string ladder)
         {
-            qmSettings.Ladder = ladder;
-            settingsService.SaveSettings();
+            qmUserSettings.Ladder = ladder;
+            userSettingsService.SaveSettings();
 
             FetchLadderMapsForAbbrAsync(ladder);
         }
@@ -165,14 +165,14 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
         {
             if (authData == null)
             {
-                settingsService.ClearAuthData();
+                userSettingsService.ClearAuthData();
                 LoginEvent?.Invoke(this, new QmLoginEventArgs(refresh ? QmLoginEventStatusEnum.FailedRefresh : QmLoginEventStatusEnum.Unauthorized));
                 return;
             }
 
-            qmSettings.AuthData = authData;
-            qmSettings.Email = email ?? qmSettings.Email;
-            settingsService.SaveSettings();
+            qmUserSettings.AuthData = authData;
+            qmUserSettings.Email = email ?? qmUserSettings.Email;
+            userSettingsService.SaveSettings();
             await FetchDataAsync();
         }
 

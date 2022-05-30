@@ -1,19 +1,23 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using ClientCore;
-using Newtonsoft.Json;
 using Rampastring.Tools;
 
 namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
 {
     public class QuickMatchSettingsService
     {
-        private static readonly string SettingsFile = $"{ProgramConstants.ClientUserFilesPath}QuickMatchSettings.ini";
+        private static readonly string SettingsFile = ClientConfiguration.Instance.QuickMatchPath;
 
         private const string BasicSectionKey = "Basic";
-        private const string AuthDataKey = "AuthData";
-        private const string EmailKey = "Email";
-        private const string LadderKey = "Ladder";
+
+        private const string BaseUrlKey = "BaseUrl";
+        private const string LoginUrlKey = "LoginUrl";
+        private const string RefreshUrlKey = "RefreshUrl";
+        private const string ServerStatusUrlKey = "ServerStatusUrl";
+        private const string GetUserAccountsUrlKey = "GetUserAccountsUrl";
+        private const string GetLaddersUrlKey = "GetLaddersUrl";
+        private const string GetLadderMapsUrlKey = "GetLadderMapsUrl";
+
 
         private QmSettings qmSettings;
 
@@ -24,49 +28,36 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
 
             qmSettings = new QmSettings();
             if (!File.Exists(SettingsFile))
-                return qmSettings;
+                SaveSettings(); // init the settings file
 
             var iniFile = new IniFile(SettingsFile);
             var basicSection = iniFile.GetSection(BasicSectionKey);
             if (basicSection == null)
                 return qmSettings;
 
-            qmSettings.AuthData = GetAuthData(basicSection);
-            qmSettings.Email = basicSection.GetStringValue(EmailKey, null);
-            qmSettings.Ladder = basicSection.GetStringValue(LadderKey, null);
+            qmSettings.BaseUrl = basicSection.GetStringValue(BaseUrlKey, QmSettings.DefaultBaseUrl);
+            qmSettings.LoginUrl = basicSection.GetStringValue(LoginUrlKey, QmSettings.DefaultLoginUrl);
+            qmSettings.RefreshUrl = basicSection.GetStringValue(RefreshUrlKey, QmSettings.DefaultRefreshUrl);
+            qmSettings.ServerStatusUrl = basicSection.GetStringValue(ServerStatusUrlKey, QmSettings.DefaultServerStatusUrl);
+            qmSettings.GetUserAccountsUrl = basicSection.GetStringValue(GetUserAccountsUrlKey, QmSettings.DefaultGetUserAccountsUrl);
+            qmSettings.GetLaddersUrl = basicSection.GetStringValue(GetLaddersUrlKey, QmSettings.DefaultGetLaddersUrl);
+            qmSettings.GetLadderMapsUrl = basicSection.GetStringValue(GetLadderMapsUrlKey, QmSettings.DefaultGetLadderMapsUrl);
 
             return qmSettings;
         }
 
-        private static QmAuthData GetAuthData(IniSection section)
-        {
-            if (!section.KeyExists(AuthDataKey))
-                return null;
-
-            string authDataValue = section.GetStringValue(AuthDataKey, null);
-            if (string.IsNullOrEmpty(authDataValue))
-                return null;
-
-            try
-            {
-                return JsonConvert.DeserializeObject<QmAuthData>(authDataValue);
-            }
-            catch (Exception e)
-            {
-                Logger.Log(e.StackTrace);
-                return null;
-            }
-        }
-
-        public void ClearAuthData() => qmSettings.AuthData = null;
 
         public void SaveSettings()
         {
             var iniFile = new IniFile();
             var basicSection = new IniSection(BasicSectionKey);
-            basicSection.AddKey(EmailKey, qmSettings.Email ?? string.Empty);
-            basicSection.AddKey(LadderKey, qmSettings.Ladder ?? string.Empty);
-            basicSection.AddKey(AuthDataKey, JsonConvert.SerializeObject(qmSettings.AuthData) ?? string.Empty);
+            basicSection.AddKey(BaseUrlKey, qmSettings.BaseUrl);
+            basicSection.AddKey(LoginUrlKey, qmSettings.LoginUrl);
+            basicSection.AddKey(RefreshUrlKey, qmSettings.RefreshUrl);
+            basicSection.AddKey(ServerStatusUrlKey, qmSettings.ServerStatusUrl);
+            basicSection.AddKey(GetUserAccountsUrlKey, qmSettings.GetUserAccountsUrl);
+            basicSection.AddKey(GetLaddersUrlKey, qmSettings.GetLaddersUrl);
+            basicSection.AddKey(GetLadderMapsUrlKey, qmSettings.GetLadderMapsUrl);
 
             iniFile.AddSection(basicSection);
             iniFile.WriteIniFile(SettingsFile);
