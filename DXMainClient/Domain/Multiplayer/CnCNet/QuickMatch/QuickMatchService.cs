@@ -67,9 +67,14 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
         /// </summary>
         public void Logout()
         {
+            ClearAuthData();
+            LoginEvent?.Invoke(this, new QmLoginEventArgs(QmLoginEventStatusEnum.Logout));
+        }
+
+        private void ClearAuthData()
+        {
             userSettingsService.ClearAuthData();
             userSettingsService.SaveSettings();
-            LoginEvent?.Invoke(this, new QmLoginEventArgs(QmLoginEventStatusEnum.Logout));
         }
 
         /// <summary>
@@ -86,11 +91,13 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
             catch (ClientException e)
             {
                 Logger.Log(e.Message);
-                LoginEvent?.Invoke(this, new QmLoginEventArgs(QmLoginEventStatusEnum.Unauthorized));
+                ClearAuthData();
+                LoginEvent?.Invoke(this, new QmLoginEventArgs(QmLoginEventStatusEnum.FailedRefresh));
             }
             catch (Exception e)
             {
                 Logger.Log(e.StackTrace);
+                ClearAuthData();
                 LoginEvent?.Invoke(this, new QmLoginEventArgs(QmLoginEventStatusEnum.Unknown));
             }
             StatusMessageEvent?.Invoke(this, null);
