@@ -432,9 +432,11 @@
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\IPostBodyModel.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\Exceptions\QmUnauthorizedException.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmLadderMapsEventArgs.cs" />
+    <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmLaddersEventArgs.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmLoginEventArgs.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmMapSelectedEventArgs.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmSettings.cs" />
+    <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmUserAccountsEventArgs.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmUserSettings.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmData.cs" />
     <Compile Include="Domain\Multiplayer\CnCNet\QuickMatch\QmLadder.cs" />

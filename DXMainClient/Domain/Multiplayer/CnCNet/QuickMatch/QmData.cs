@@ -4,8 +4,8 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
 {
     public class QmData
     {
-        public IEnumerable<QmLadder> Ladders { get; set; }
+        public List<QmLadder> Ladders { get; set; }
         
-        public IEnumerable<QmUserAccount> UserAccounts { get; set; }
+        public List<QmUserAccount> UserAccounts { get; set; }
     }
 }

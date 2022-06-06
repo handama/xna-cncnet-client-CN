@@ -7,6 +7,7 @@
         Unauthorized = 2,
         FailedRefresh = 3,
         Logout = 4,
-        FailedDataFetch = 5
+        FailedDataFetch = 5,
+        NoUserAccounts = 6
     }
 }

@@ -24,6 +24,8 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
         public event EventHandler<QmStatusMessageEventArgs> StatusMessageEvent;
         public event EventHandler<QmLoginEventArgs> LoginEvent;
         public event EventHandler<QmLadderMapsEventArgs> LadderMapsEvent;
+        public event EventHandler<QmUserAccountsEventArgs> UserAccountsEvent;
+        public event EventHandler<QmLaddersEventArgs> LaddersEvent;
 
         private QuickMatchService()
         {
@@ -153,10 +155,14 @@ namespace DTAClient.Domain.Multiplayer.CnCNet.QuickMatch
             var fetchUserAccountsTask = apiService.FetchUserAccountsAsync();
 
             await Task.WhenAll(fetchLaddersTask, fetchUserAccountsTask);
-            qmData.Ladders = fetchLaddersTask.Result;
-            qmData.UserAccounts = fetchUserAccountsTask.Result;
+            qmData.Ladders = fetchLaddersTask.Result.ToList();
+            qmData.UserAccounts = fetchUserAccountsTask.Result.ToList();
 
-            LoginEvent?.Invoke(this, new QmLoginEventArgs(QmLoginEventStatusEnum.Success));
+            LaddersEvent?.Invoke(this, new QmLaddersEventArgs(qmData.Ladders));
+            UserAccountsEvent?.Invoke(this, new QmUserAccountsEventArgs(qmData.UserAccounts));
+
+            var loginStatus = qmData.UserAccounts.Any() ? QmLoginEventStatusEnum.Success : QmLoginEventStatusEnum.NoUserAccounts;
+            LoginEvent?.Invoke(this, new QmLoginEventArgs(loginStatus));
         }
 
         private async Task FetchLadderMapsForAbbrAsync(string ladderAbbr)

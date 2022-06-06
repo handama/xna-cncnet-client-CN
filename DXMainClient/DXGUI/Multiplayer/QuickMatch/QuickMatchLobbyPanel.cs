@@ -27,7 +27,7 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
         public QuickMatchLobbyPanel(WindowManager windowManager) : base(windowManager)
         {
             quickMatchService = QuickMatchService.GetInstance();
-            quickMatchService.LoginEvent += LoginEvent;
+            quickMatchService.UserAccountsEvent += UserAccountsEvent;
             quickMatchService.LadderMapsEvent += LadderMapsEvent;
 
             mapLoader = MapLoader.GetInstance();
@@ -69,20 +69,11 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
         /// Called when the QM service has finished the login process
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="qmLoginEventArgs"></param>
-        private void LoginEvent(object sender, QmLoginEventArgs qmLoginEventArgs)
-        {
-            if (qmLoginEventArgs?.Status == QmLoginEventStatusEnum.Success)
-                UpdateUserAccounts();
-        }
-
-        /// <summary>
-        /// This should only be called upon a successful login
-        /// </summary>
-        private void UpdateUserAccounts()
+        /// <param name="qmUserAccountsEventArgs"></param>
+        private void UserAccountsEvent(object sender, QmUserAccountsEventArgs qmUserAccountsEventArgs)
         {
             ddUserAccounts.Items.Clear();
-            var userAccounts = quickMatchService.GetUserAccounts();
+            var userAccounts = qmUserAccountsEventArgs.UserAccounts;
             foreach (QmUserAccount userAccount in userAccounts)
             {
                 ddUserAccounts.AddItem(new XNADropDownItem()

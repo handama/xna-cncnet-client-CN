@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using ClientGUI;
 using DTAClient.Domain.Multiplayer.CnCNet.QuickMatch;
 using DTAClient.DXGUI.Generic;
@@ -22,6 +23,7 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
             this.topBar = topBar;
             quickMatchService = QuickMatchService.GetInstance();
             quickMatchService.LoginEvent += LoginEvent;
+            quickMatchService.UserAccountsEvent += UserAccountsEvent;
         }
 
         public override void Initialize()
@@ -67,20 +69,27 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
                 loginPanel.InitLogin();
         }
 
-        private void RefreshForLogin()
+        private void RefreshForLogin(QmLoginEventStatusEnum loginStatus)
         {
-            if (!quickMatchService.IsLoggedIn())
+            switch (loginStatus)
             {
-                loginPanel.Enable();
-                lobbyPanel.Disable();
-            }
-            else
-            {
-                lobbyPanel.Enable();
-                loginPanel.Disable();
+                case QmLoginEventStatusEnum.Success:
+                    lobbyPanel.Enable();
+                    loginPanel.Disable();
+                    return;
+                case QmLoginEventStatusEnum.Logout:
+                    loginPanel.Enable();
+                    lobbyPanel.Disable();
+                    return;
             }
         }
 
-        private void LoginEvent(object sender, QmLoginEventArgs qmLoginEventArgs) => RefreshForLogin();
+        private void LoginEvent(object sender, QmLoginEventArgs qmLoginEventArgs) => RefreshForLogin(qmLoginEventArgs.Status);
+
+        private void UserAccountsEvent(object sender, QmUserAccountsEventArgs e)
+        {
+            if (!e.UserAccounts.Any())
+                XNAMessageBox.Show(WindowManager, "No User Accounts", "No user accounts found in quick match. Are you registered for this month?");
+        }
     }
 }
