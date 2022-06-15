@@ -199,6 +199,7 @@ namespace DTAClient.DXGUI.Generic
             ClientGUICreator.Instance.AddControl(typeof(QuickMatchLobbyPanel));
             ClientGUICreator.Instance.AddControl(typeof(QuickMatchMapList));
             ClientGUICreator.Instance.AddControl(typeof(QuickMatchStatusMessageWindow));
+            ClientGUICreator.Instance.AddControl(typeof(XNAClientTabControl));
         }
 
         public override void Update(GameTime gameTime)

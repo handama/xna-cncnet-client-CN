@@ -4,6 +4,7 @@ using System.Linq;
 using ClientGUI;
 using DTAClient.Domain.Multiplayer;
 using DTAClient.Domain.Multiplayer.CnCNet.QuickMatch;
+using Localization;
 using Rampastring.XNAUI;
 using Rampastring.XNAUI.XNAControls;
 
@@ -11,6 +12,8 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
 {
     public class QuickMatchLobbyPanel : INItializableWindow
     {
+        private const int TAB_WIDTH = 133;
+        
         private readonly QuickMatchService quickMatchService;
         private readonly MapLoader mapLoader;
 
@@ -23,6 +26,8 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
         private XNAClientDropDown ddNicknames;
         private XNAClientDropDown ddSides;
         private XNAPanel mapPreviewBox;
+        private XNAPanel settingsPanel;
+        private XNAClientTabControl tabPanel;
 
         public QuickMatchLobbyPanel(WindowManager windowManager) : base(windowManager)
         {
@@ -57,6 +62,29 @@ namespace DTAClient.DXGUI.Multiplayer.QuickMatch
 
             mapPreviewBox = FindChild<XNAPanel>(nameof(mapPreviewBox));
             mapPreviewBox.PanelBackgroundDrawMode = PanelBackgroundImageDrawMode.CENTERED;
+
+            settingsPanel = FindChild<XNAPanel>(nameof(settingsPanel));
+            settingsPanel.Disable();
+
+            tabPanel = FindChild<XNAClientTabControl>(nameof(tabPanel));
+            tabPanel.AddTab("Map".L10N("QM:Tabs:Map"), TAB_WIDTH);
+            tabPanel.AddTab("Settings".L10N("QM:Tabs:Settings"), TAB_WIDTH);
+            tabPanel.SelectedIndexChanged += TabSelected;
+        }
+
+        private void TabSelected(object sender, EventArgs eventArgs)
+        {
+            switch (tabPanel.SelectedTab)
+            {
+                case 0:
+                    mapPreviewBox.Enable();
+                    settingsPanel.Disable();
+                    return;
+                case 1:
+                    mapPreviewBox.Disable();
+                    settingsPanel.Enable();
+                    return;
+            }
         }
 
         private void BtnLogout_LeftClick(object sender, EventArgs eventArgs)
