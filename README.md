@@ -11,6 +11,8 @@ The MonoGame / XNA CnCNet client, a platform for playing classic Command & Conqu
 * 载入根目录地图
 * 不限制地图拓展名
 * 自定义第三方地图目录名
+* (phobos)为ToolTipDescriptions提供选项
+* 每张地图可自定义是否使用客户端随机位置
 
 Targets
 -------
