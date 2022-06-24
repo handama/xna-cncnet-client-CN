@@ -5,12 +5,12 @@ The MonoGame / XNA CnCNet client, a platform for playing classic Command & Conqu
 新功能
 -------
 （待补全）
-大部分界面的汉化
-中文输入
-自定义IRC服务器
-载入根目录地图
-不限制地图拓展名
-自定义第三方地图目录名
+* 大部分界面的汉化
+* 中文输入
+* 自定义IRC服务器
+* 载入根目录地图
+* 不限制地图拓展名
+* 自定义第三方地图目录名
 
 Targets
 -------
