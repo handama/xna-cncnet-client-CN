@@ -33,6 +33,7 @@ namespace DTAClient
 
     static class PreStartup
     {
+
         /// <summary>
         /// Initializes various basic systems like the client's logger, 
         /// constants, and the general exception handler.
@@ -43,6 +44,7 @@ namespace DTAClient
         /// <param name="parameters">The client's startup parameters.</param>
         public static void Initialize(StartupParams parameters)
         {
+
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(HandleExcept);
 
             Environment.CurrentDirectory = MainClientConstants.gamepath;

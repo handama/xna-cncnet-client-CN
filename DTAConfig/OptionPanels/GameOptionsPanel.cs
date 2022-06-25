@@ -5,6 +5,7 @@ using Rampastring.Tools;
 using Rampastring.XNAUI;
 using Rampastring.XNAUI.XNAControls;
 using System;
+using System.Collections.Generic;
 
 namespace DTAConfig.OptionPanels
 {
@@ -13,8 +14,88 @@ namespace DTAConfig.OptionPanels
         private const int TEXT_BACKGROUND_COLOR_TRANSPARENT = 0;
         private const int TEXT_BACKGROUND_COLOR_BLACK = 12;
         private const int MAX_SCROLL_RATE = 6;
+        private IniFile clientDefinitionsIni;
+        private string ExtraExeCommandLineParameters => clientDefinitionsIni.GetStringValue("Settings", "ExtraCommandLineParams", string.Empty);
 
-        public GameOptionsPanel(WindowManager windowManager, UserINISettings iniSettings, XNAControl topBar)
+        private List<string> essentialECLs = new List<string>() { "SPAWN", "CD", "LOG" };
+
+        private List<string> ExtraExeCommandLineTrimed(string eclText)
+        {
+
+            string[] ecls = eclText.Split('-');
+            List<string> configurableECLs = new List<string>();
+            int n = 1;
+            for (; n < ecls.Length;)
+            {
+                ecls[n] = ecls[n].Trim();
+                bool isEssentialECL = false;
+                foreach (string eecl in essentialECLs)
+                {
+                    if (String.Equals(eecl, ecls[n], StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        isEssentialECL = true;
+                    }
+                }
+                if (!isEssentialECL)
+                {
+                    configurableECLs.Add(ecls[n]);
+                }
+                n++;
+            }
+            return configurableECLs;
+        }
+        private void WriteExtraCommandLines(string ecls)
+        {
+            string clt = "";
+            foreach (string ecl in essentialECLs)
+            {
+                clt += "-" + ecl + " ";
+            }
+            string fullecls = clt + ecls;
+            clientDefinitionsIni.SetStringValue("Settings", "ExtraCommandLineParams", fullecls);
+            clientDefinitionsIni.WriteIniFile();
+        }
+        private bool CompareExtraCommandLines(string ecls)
+        {
+            bool isAllTheSame = true;
+            List<string> oldecls = ExtraExeCommandLineTrimed(ExtraExeCommandLineParameters);
+            oldecls.Sort();
+            List<string> newecls = ExtraExeCommandLineTrimed(ecls);
+            newecls.Sort();
+            string newecl = CommandLineText(ecls);
+            if (oldecls.Count != newecls.Count)
+            {
+                WriteExtraCommandLines(newecl);
+                isAllTheSame = false;
+            }
+            else
+            {
+                int i = 0;
+                for (;i< oldecls.Count;)
+                {
+                    if (!String.Equals(oldecls[i], newecls[i], StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        isAllTheSame = false;
+                    }
+                    i++;
+                }
+                if (!isAllTheSame) WriteExtraCommandLines(newecl);
+            }
+            return !isAllTheSame;
+        }
+
+        private string CommandLineText(string eclText)
+        {
+            string clt = "";
+            foreach (string ecl in ExtraExeCommandLineTrimed(eclText))
+            {
+                clt += "-" + ecl + " ";
+            }
+            return clt;
+        }
+
+
+    public GameOptionsPanel(WindowManager windowManager, UserINISettings iniSettings, XNAControl topBar)
             : base(windowManager, iniSettings)
         {
             this.topBar = topBar;
@@ -38,12 +119,14 @@ namespace DTAConfig.OptionPanels
         private XNAControl topBar;
 
         private XNATextBox tbPlayerName;
+        private XNATextBox tbCommandLine;
 
         private HotkeyConfigurationWindow hotkeyConfigWindow;
 
         public override void Initialize()
         {
             base.Initialize();
+            clientDefinitionsIni = new IniFile(ProgramConstants.GetBaseResourcePath() + "ClientDefinitions.ini");
 
             Name = "GameOptionsPanel";
 
@@ -102,6 +185,10 @@ namespace DTAConfig.OptionPanels
             var lblPlayerName = new XNALabel(WindowManager);
             lblPlayerName.Name = "lblPlayerName";
             lblPlayerName.Text = "玩家名称*:";
+
+            var lblCommandLine = new XNALabel(WindowManager);
+            lblCommandLine.Name = "lblCommandLine";
+            lblCommandLine.Text = "附加命令行参数:";
 
 #if YR
             chkShowHiddenObjects = new XNAClientCheckBox(WindowManager);
@@ -174,7 +261,19 @@ namespace DTAConfig.OptionPanels
             lblNotice.Name = "lblNotice";
             lblNotice.ClientRectangle = new Rectangle(lblPlayerName.X,
                 lblPlayerName.Bottom + 30, 0, 0);
-            lblNotice.Text = "* 如果你已连接到CnCNet，你需要重新登录才能使新名称生效。";
+            lblNotice.Text = "* 如果你已连接到CnCNet，需要重新登录才能使新名称生效。";
+
+            lblCommandLine.ClientRectangle = new Rectangle(
+            lblScrollRate.X,
+            lblNotice.Bottom + 12, 0, 0);
+
+            tbCommandLine = new XNATextBox(WindowManager);
+            tbCommandLine.Name = "tbCommandLine";
+            tbCommandLine.MaximumTextLength = 99;
+            tbCommandLine.ClientRectangle = new Rectangle(trbScrollRate.X,
+                lblCommandLine.Y - 2, 200, 19);
+
+            tbCommandLine.Text = CommandLineText(ExtraExeCommandLineParameters);
 
             hotkeyConfigWindow = new HotkeyConfigurationWindow(WindowManager);
             DarkeningPanel.AddAndInitializeWithControl(WindowManager, hotkeyConfigWindow);
@@ -182,7 +281,7 @@ namespace DTAConfig.OptionPanels
 
             var btnConfigureHotkeys = new XNAClientButton(WindowManager);
             btnConfigureHotkeys.Name = "btnConfigureHotkeys";
-            btnConfigureHotkeys.ClientRectangle = new Rectangle(lblPlayerName.X, lblNotice.Bottom + 36, 160, 23);
+            btnConfigureHotkeys.ClientRectangle = new Rectangle(lblCommandLine.X, lblNotice.Bottom + 36, 160, 23);
             btnConfigureHotkeys.Text = "编辑热键";
             btnConfigureHotkeys.LeftClick += BtnConfigureHotkeys_LeftClick;
 
@@ -195,6 +294,8 @@ namespace DTAConfig.OptionPanels
             AddChild(chkToolTipDescriptions);
             AddChild(chkLoadRootFolderMaps);
             AddChild(lblPlayerName);
+            AddChild(lblCommandLine);
+            AddChild(tbCommandLine);
             AddChild(tbPlayerName);
             AddChild(lblNotice);
             AddChild(btnConfigureHotkeys);
@@ -248,6 +349,7 @@ namespace DTAConfig.OptionPanels
             chkBlackChatBackground.Checked = IniSettings.TextBackgroundColor == TEXT_BACKGROUND_COLOR_BLACK;
 #endif
             tbPlayerName.Text = UserINISettings.Instance.PlayerName;
+            tbCommandLine.Text = CommandLineText(ExtraExeCommandLineParameters);
         }
 
         public override bool Save()
@@ -286,6 +388,7 @@ namespace DTAConfig.OptionPanels
             if (playerName.Length > 0)
                 IniSettings.PlayerName.Value = tbPlayerName.Text;
 
+            restartRequired = restartRequired || CompareExtraCommandLines(tbCommandLine.Text);
             return restartRequired;
         }
 

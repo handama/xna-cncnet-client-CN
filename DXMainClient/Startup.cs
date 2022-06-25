@@ -18,8 +18,10 @@ namespace DTAClient
     /// <summary>
     /// A class that handles initialization of the Client.
     /// </summary>
+    
     public class Startup
     {
+
         /// <summary>
         /// The main method for startup and initialization.
         /// </summary>
