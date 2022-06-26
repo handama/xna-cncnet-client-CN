@@ -23,9 +23,6 @@ namespace ClientCore
         private IniFile DTACnCNetClient_ini;
         private IniFile clientDefinitionsIni;
 
-        private string PhobosVersion;
-        private bool PhobosECLNeeded = false;
-        private string PhobosECLP = "";
 
         protected ClientConfiguration()
         {
@@ -38,19 +35,6 @@ namespace ClientCore
 
 
             gameOptions_ini = new IniFile(ProgramConstants.GetBaseResourcePath() + GAME_OPTIONS);
-            if (File.Exists(ProgramConstants.PhobosPath))
-            {
-                FileVersionInfo phobosinfo = FileVersionInfo.GetVersionInfo(ProgramConstants.PhobosPath);
-                Logger.Log("Phobos detected, version: " + phobosinfo.FileVersion + ".");
-                if (phobosinfo.FileVersion.Contains(ProgramConstants.PhobosDevBuildPrefix)) PhobosECLNeeded = true;
-                if (PhobosECLNeeded)
-                {
-                    PhobosVersion = phobosinfo.FileVersion.Replace(ProgramConstants.PhobosDevBuildPrefix, "");
-                    Logger.Log("Phobos is dev version, adding extra command line parameter.");
-                    PhobosECLP = " " + ProgramConstants.PhobosPrefix + PhobosVersion;
-                }
-                
-            }
         }
 
         /// <summary>
@@ -236,7 +220,7 @@ namespace ClientCore
         public bool GenerateTranslationStub => clientDefinitionsIni.GetBooleanValue(SETTINGS, "GenerateTranslationStub", false);
 
 
-        public string ExtraExeCommandLineParameters => clientDefinitionsIni.GetStringValue(SETTINGS, "ExtraCommandLineParams", string.Empty) + PhobosECLP;
+        public string ExtraExeCommandLineParameters => clientDefinitionsIni.GetStringValue(SETTINGS, "ExtraCommandLineParams", string.Empty);
 
         public string MPMapsIniPath => clientDefinitionsIni.GetStringValue(SETTINGS, "MPMapsPath", "INI\\MPMaps.ini");
 
