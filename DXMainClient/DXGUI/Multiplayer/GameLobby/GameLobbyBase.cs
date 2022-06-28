@@ -42,11 +42,14 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         public void CreateRa2FileList()
         {
-            DirectoryInfo folder = new DirectoryInfo(ra2ModePath);
-            foreach (FileInfo file in folder.GetFiles("*"))
+            if (Directory.Exists(ra2ModePath))
             {
-                ra2ModefilesFullName.Add(file.FullName);
-                ra2ModefilesName.Add(file.Name);
+                DirectoryInfo folder = new DirectoryInfo(ra2ModePath);
+                foreach (FileInfo file in folder.GetFiles("*"))
+                {
+                    ra2ModefilesFullName.Add(file.FullName);
+                    ra2ModefilesName.Add(file.Name);
+                }
             }
         }
         public void CopyRa2Files()
