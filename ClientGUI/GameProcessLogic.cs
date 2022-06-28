@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using ClientCore;
 using Rampastring.Tools;
+using System.Collections.Generic;
 
 namespace ClientGUI
 {
@@ -22,12 +23,15 @@ namespace ClientGUI
         public static bool PhobosECLNeeded = false;
         public static string PhobosECLP = "";
 
+
         public static bool UseQres { get; set; }
         public static bool SingleCoreAffinity { get; set; }
 
         /// <summary>
         /// Starts the main game process.
         /// </summary>
+        /// 
+
         public static void StartGameProcess()
         {
             Logger.Log("About to launch main game executable.");

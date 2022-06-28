@@ -35,6 +35,44 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         private const int RANK_MEDIUM = 2;
         private const int RANK_HARD = 3;
 
+        public string ra2ModePath = ProgramConstants.GetBaseResourcePath() + "ra2mode\\";
+        public List<string> ra2ModefilesFullName = new List<string>();
+        public List<string> ra2ModefilesName = new List<string>();
+
+
+        public void CreateRa2FileList()
+        {
+            DirectoryInfo folder = new DirectoryInfo(ra2ModePath);
+            foreach (FileInfo file in folder.GetFiles("*"))
+            {
+                ra2ModefilesFullName.Add(file.FullName);
+                ra2ModefilesName.Add(file.Name);
+            }
+        }
+        public void CopyRa2Files()
+        {
+            int i = 0;
+            for (; i < ra2ModefilesName.Count;)
+            {
+                if (File.Exists(ra2ModefilesFullName[i]))
+                {
+                    File.Copy(ra2ModefilesFullName[i], ProgramConstants.GamePath + ra2ModefilesName[i], true);
+                }
+                i++;
+            }
+        }
+        public void DeleteRa2Files()
+        {
+            int i = 0;
+            for (; i < ra2ModefilesName.Count;)
+            {
+                if (File.Exists(ProgramConstants.GamePath + ra2ModefilesName[i]))
+                {
+                    File.Delete(ProgramConstants.GamePath + ra2ModefilesName[i]);
+                }
+                i++;
+            }
+        }
         /// <summary>
         /// Creates a new instance of the game lobby base.
         /// </summary>
@@ -819,7 +857,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         }
 
 #if YR
-        protected void CheckRa2Mode()
+        protected bool CheckRa2Mode()
         {
             // TODO obsolete, remove when it's certain that this is not needed anywhere
 
@@ -834,6 +872,10 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                     RA2Mode = false;
                 }
             }
+            if (RA2Mode == true)
+                return true;
+            else
+                return false;
         }
 #endif
 
@@ -1482,7 +1524,12 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             WriteMap(houseInfos);
 
             GameProcessLogic.GameProcessExited += GameProcessExited_Callback;
-
+            CreateRa2FileList();
+            CheckRa2Mode();
+            if (RA2Mode == true)
+                CopyRa2Files();
+            else
+                DeleteRa2Files();
             GameProcessLogic.StartGameProcess();
             UpdateDiscordPresence(true);
         }
@@ -1507,6 +1554,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             ClearReadyStatuses();
 
             CopyPlayerDataToUI();
+
+            DeleteRa2Files();
 
             if (ClientConfiguration.Instance.ProcessScreenshots)
             {

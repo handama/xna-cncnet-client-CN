@@ -117,6 +117,7 @@
     <Reference Include="Localization">
       <HintPath>..\References\Localization.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Rampastring.Tools, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\References\Rampastring.Tools.dll</HintPath>
