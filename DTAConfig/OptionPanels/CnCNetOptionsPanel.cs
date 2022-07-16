@@ -149,8 +149,8 @@ namespace DTAConfig.OptionPanels
                 AddChild(chkBox);
                 followedGameChks.Add(chkBox);
 
-                if (chkBox.Right > nextColumnXOffset)
-                    nextColumnXOffset = chkBox.Right;
+                if (chkBox.Right > columnXOffset + nextColumnXOffset)
+                    nextColumnXOffset = chkBox.Width + panel.Width + 6;
             }
         }
 
