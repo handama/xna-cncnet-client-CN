@@ -221,7 +221,7 @@ namespace DTAClient.Domain.Multiplayer
                 IniFile settingsIni = new IniFile(ProgramConstants.GamePath + ClientConfiguration.Instance.SettingsIniName);
                 if (settingsIni.GetBooleanValue ("Options", "LoadRootFolderMaps", true))
                 {
-                    string[] mapsInRootFolder = GetMaps(ProgramConstants.GamePath, true, "*.map", "*.yrm", "*.mpr", "*.mmx", "*.yro");
+                    string[] mapsInRootFolder = GetMaps(ProgramConstants.GamePath, true, "*.yrm", "*.mpr", "*.mmx", "*.yro");
                     files = mapsInCustomFolder.Concat(mapsInRootFolder).ToArray();
                 }
                 else files = mapsInCustomFolder;
