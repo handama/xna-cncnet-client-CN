@@ -62,7 +62,7 @@ copy DTAClient.exe %cr%clientxna.exe
 copy ClientCore.dll %xnaBinaries%ClientCore.dll
 copy ClientGUI.dll %xnaBinaries%ClientGUI.dll
 copy DTAConfig.dll %xnaBinaries%DTAConfig.dll
-
+copy IMEHelper.Window.dll %xnaBinaries%IMEHelper.Window.dll
 copy Rampastring.XNAUI.dll %xnaBinaries%Rampastring.XNAUI.dll
 
 echo Common

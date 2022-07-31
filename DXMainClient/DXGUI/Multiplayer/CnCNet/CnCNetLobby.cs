@@ -490,7 +490,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             bool isAdmin = currentChatChannel.Users[lbPlayerList.SelectedIndex].IsAdmin;
 
             playerContextMenu.Items[1].Text = cncnetUserData.IsFriend(ircUser.Name) ? "删除好友" : "添加好友";
-            playerContextMenu.Items[2].Text = cncnetUserData.IsIgnored(ircUser.Ident) && !isAdmin ? "解锁" : "锁定";
+            playerContextMenu.Items[2].Text = cncnetUserData.IsIgnored(ircUser.Ident) && !isAdmin ? "解除屏蔽" : "屏蔽";
             playerContextMenu.Items[2].Selectable = !isAdmin;
 
             playerContextMenu.Open(GetCursorPoint());
@@ -1189,7 +1189,9 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 List<string> playerNames = players.ToList();
                 string mapName = splitMessage[7];
                 string gameMode = splitMessage[8];
-                string tunnelAddress = splitMessage[9];
+                string[] tunnelAddressAndPort = splitMessage[9].Split(':');
+                string tunnelAddress = tunnelAddressAndPort[0];
+                int tunnelPort = int.Parse(tunnelAddressAndPort[1]);
                 string loadedGameId = splitMessage[10];
                 bool isRA2Mode = 11 < splitMessage.Length ? Conversions.BooleanFromString(splitMessage[11], false) : false;
 

@@ -7,6 +7,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Rampastring.XNAUI;
+using System.Net.NetworkInformation;
 
 namespace DTAClient.Domain.Multiplayer.LAN
 {
@@ -20,11 +22,13 @@ namespace DTAClient.Domain.Multiplayer.LAN
 
         public event EventHandler<NetworkMessageEventArgs> MessageReceived;
         public event EventHandler ConnectionLost;
+        public event EventHandler PlayerPinged;
 
         private const int PORT = 1234;
         private const int LOBBY_PORT = 1233;
         private const double SEND_PING_TIMEOUT = 10.0;
         private const double DROP_TIMEOUT = 20.0;
+        private const int LAN_PING_TIMEOUT = 1000;
 
         public TimeSpan TimeSinceLastReceivedMessage { get; set; }
         public TimeSpan TimeSinceLastSentMessage { get; set; }
@@ -186,6 +190,25 @@ namespace DTAClient.Domain.Multiplayer.LAN
 
                 ConnectionLost?.Invoke(this, EventArgs.Empty);
                 break;
+            }
+        }
+
+        public void UpdatePing(WindowManager wm)
+        {
+            using (Ping p = new Ping())
+            {
+                try
+                {
+                    PingReply reply = p.Send(System.Net.IPAddress.Parse(IPAddress), LAN_PING_TIMEOUT);
+                    if (reply.Status == IPStatus.Success)
+                        Ping = Convert.ToInt32(reply.RoundtripTime);
+
+                    wm.AddCallback(PlayerPinged, this, EventArgs.Empty);
+                }
+                catch (PingException ex)
+                {
+                    Logger.Log($"Caught an exception when pinging {Name} LAN player: {ex.Message}");
+                }
             }
         }
 

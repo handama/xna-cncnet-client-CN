@@ -15,6 +15,11 @@ namespace ClientGUI
     public class ToolTip : XNAControl
     {
         /// <summary>
+        /// If set to true - makes tooltip not appear and instantly hides it if currently shown.
+        /// </summary>
+        public bool Blocked { get; set; }
+
+        /// <summary>
         /// Creates a new tool tip and attaches it to the given control.
         /// </summary>
         /// <param name="windowManager">The window manager.</param>
@@ -27,12 +32,17 @@ namespace ClientGUI
             masterControl.MouseMove += MasterControl_MouseMove;
             masterControl.EnabledChanged += MasterControl_EnabledChanged;
             InputEnabled = false;
-            DrawOrder = int.MinValue;
-            // TODO: adding tool tips as root-level controls might be CPU-intensive.
-            // instead we could find out the root-level parent and only have the tooltip
-            // in the window manager's list when the root-level parent is visible.
-            WindowManager.AddControl(this);
+            DrawOrder = int.MaxValue;
+            GetParentWindow(masterControl.Parent).AddChild(this);
             Visible = false;
+        }
+
+        private XNAWindow GetParentWindow(XNAControl parent)
+        {
+            if (parent is XNAWindow)
+                return parent as XNAWindow;
+            else
+                return GetParentWindow(parent.Parent);
         }
 
         private void MasterControl_EnabledChanged(object sender, EventArgs e)
@@ -56,7 +66,7 @@ namespace ClientGUI
         private XNAControl masterControl;
 
         private TimeSpan cursorTime = TimeSpan.Zero;
-        
+
 
         private void MasterControl_MouseEnter(object sender, EventArgs e)
         {
@@ -98,6 +108,13 @@ namespace ClientGUI
 
         public override void Update(GameTime gameTime)
         {
+            if (Blocked)
+            {
+                Alpha = 0f;
+                Visible = false;
+                return;
+            }
+
             if (IsMasterControlOnCursor)
             {
                 cursorTime += gameTime.ElapsedGameTime;
@@ -123,22 +140,13 @@ namespace ClientGUI
         public override void Draw(GameTime gameTime)
         {
             Renderer.FillRectangle(ClientRectangle,
-                ColorFromAlpha(UISettings.ActiveSettings.BackgroundColor));
+                UISettings.ActiveSettings.BackgroundColor * Alpha);
             Renderer.DrawRectangle(ClientRectangle,
-                ColorFromAlpha(UISettings.ActiveSettings.AltColor));
+                UISettings.ActiveSettings.AltColor * Alpha);
             Renderer.DrawString(Text, ClientConfiguration.Instance.ToolTipFontIndex,
                 new Vector2(X + ClientConfiguration.Instance.ToolTipMargin, Y + ClientConfiguration.Instance.ToolTipMargin),
-                ColorFromAlpha(UISettings.ActiveSettings.AltColor), 1.0f);
+                UISettings.ActiveSettings.AltColor * Alpha, 1.0f);
         }
-
-        private Color ColorFromAlpha(Color color)
-            // This is necessary because XNA lacks the color constructor that
-            // takes a color and a float value for alpha.
-#if XNA
-            => new Color(color.R, color.G, color.B, (int)(Alpha * 255.0f));
-#else
-            => new Color(color, Alpha);
-#endif
 
         private Point SumPoints(Point p1, Point p2)
             // This is also needed for XNA compatibility

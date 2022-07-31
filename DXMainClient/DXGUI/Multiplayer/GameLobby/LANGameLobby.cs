@@ -577,7 +577,15 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             if (IsHost)
                 BroadcastMessage(GET_READY_COMMAND);
         }
+        protected override void ClearPingIndicators()
+        {
+            // TODO Implement pings for LAN lobbies
+        }
 
+        protected override void UpdatePlayerPingIndicator(PlayerInfo pInfo)
+        {
+            // TODO Implement pings for LAN lobbies
+        }
         /// <summary>
         /// Broadcasts a command to all players in the game as the game host.
         /// </summary>

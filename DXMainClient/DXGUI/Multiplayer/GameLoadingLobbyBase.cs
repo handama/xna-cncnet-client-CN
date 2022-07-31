@@ -49,9 +49,9 @@ namespace DTAClient.DXGUI.Multiplayer
         protected EnhancedSoundEffect sndLeaveSound;
         protected EnhancedSoundEffect sndMessageSound;
 
-        private XNALabel lblDescription;
-        private XNAPanel panelPlayers;
-        private XNALabel[] lblPlayerNames;
+        protected XNALabel lblDescription;
+        protected XNAPanel panelPlayers;
+        protected XNALabel[] lblPlayerNames;
 
         private XNALabel lblMapName;
         protected XNALabel lblMapNameValue;
@@ -59,8 +59,8 @@ namespace DTAClient.DXGUI.Multiplayer
         protected XNALabel lblGameModeValue;
         private XNALabel lblSavedGameTime;
 
-        private XNAClientButton btnLoadGame;
-        private XNAClientButton btnLeaveGame;
+        protected XNAClientButton btnLoadGame;
+        protected XNAClientButton btnLeaveGame;
 
         private List<MultiplayerColor> MPColors = new List<MultiplayerColor>();
 
@@ -92,21 +92,16 @@ namespace DTAClient.DXGUI.Multiplayer
             AddChild(panelPlayers);
 
             lblPlayerNames = new XNALabel[8];
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 8; i++)
             {
                 XNALabel lblPlayerName = new XNALabel(WindowManager);
-                lblPlayerName.Name = "lblPlayerName" + i;
-                lblPlayerName.ClientRectangle = new Rectangle(9, 9 + 30 * i, 0, 0);
-                lblPlayerName.Text = "玩家 " + i;
-                panelPlayers.AddChild(lblPlayerName);
-                lblPlayerNames[i] = lblPlayerName;
-            }
 
-            for (int i = 4; i < 8; i++)
-            {
-                XNALabel lblPlayerName = new XNALabel(WindowManager);
-                lblPlayerName.Name = "lblPlayerName" + i;
-                lblPlayerName.ClientRectangle = new Rectangle(190, 9 + 30 * (i - 4), 0, 0);
+                lblPlayerName.Name = nameof(lblPlayerName) + i;
+
+                if (i < 4)
+                    lblPlayerName.ClientRectangle = new Rectangle(9, 9 + 30 * i, 0, 0);
+                else
+                    lblPlayerName.ClientRectangle = new Rectangle(190, 9 + 30 * (i - 4), 0, 0);
                 lblPlayerName.Text = "玩家 " + i;
                 panelPlayers.AddChild(lblPlayerName);
                 lblPlayerNames[i] = lblPlayerName;

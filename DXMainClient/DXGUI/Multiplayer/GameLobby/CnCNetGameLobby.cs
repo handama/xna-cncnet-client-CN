@@ -72,7 +72,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 new StringCommandHandler(MAP_SHARING_DOWNLOAD_REQUEST, HandleMapDownloadRequest),
                 new NoParamCommandHandler(MAP_SHARING_DISABLED_MESSAGE, HandleMapSharingBlockedMessage),
                 new NoParamCommandHandler("RETURN", ReturnNotification),
-                new IntCommandHandler("TNLPNG", TunnelPingNotification),
+                new IntCommandHandler("TNLPNG", HandleTunnelPing),
                 new StringCommandHandler("FHSH", FileHashNotification),
                 new StringCommandHandler("MM", CheaterNotification),
                 new StringCommandHandler(DICE_ROLL_MESSAGE, HandleDiceRollResult),
@@ -95,7 +95,6 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         public event EventHandler GameLeft;
 
         private TunnelHandler tunnelHandler;
-        private CnCNetTunnel tunnel;
         private TunnelSelectionWindow tunnelSelectionWindow;
         private XNAClientButton btnChangeTunnel;
 
@@ -207,14 +206,15 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 btnChangeTunnel.Disable();
             }
 
-            this.tunnel = tunnel;
+            tunnelHandler.CurrentTunnel = tunnel;
+            tunnelHandler.CurrentTunnelPinged += TunnelHandler_CurrentTunnelPinged;
 
             connectionManager.ConnectionLost += ConnectionManager_ConnectionLost;
             connectionManager.Disconnected += ConnectionManager_Disconnected;
 
             Refresh(isHost);
         }
-
+        private void TunnelHandler_CurrentTunnelPinged(object sender, EventArgs e) => UpdatePing();
         public void OnJoined()
         {
             FileHashCalculator fhc = new FileHashCalculator();
@@ -241,40 +241,54 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             else
             {
                 channel.SendCTCPMessage("FHSH " + fhc.GetCompleteHash(), QueuedMessageType.SYSTEM_MESSAGE, 10);
-
-                channel.SendCTCPMessage("TNLPNG " + tunnel.PingInMs, QueuedMessageType.SYSTEM_MESSAGE, 10);
-
-                if (tunnel.PingInMs < 0)
-                    AddNotice(ProgramConstants.PLAYERNAME + "无法连接至隧道服务器。");
-                else
-                    AddNotice(ProgramConstants.PLAYERNAME + "的延迟：" + tunnel.PingInMs + " ms。");
-            }
+                }
 
             TopBar.AddPrimarySwitchable(this);
             TopBar.SwitchToPrimary();
             WindowManager.SelectedControl = tbChatInput;
             ResetAutoReadyCheckbox();
+            UpdatePing();
             UpdateDiscordPresence(true);
+        }
+        private void UpdatePing()
+        {
+            if (tunnelHandler.CurrentTunnel == null)
+                return;
+
+            channel.SendCTCPMessage("TNLPNG " + tunnelHandler.CurrentTunnel.PingInMs, QueuedMessageType.SYSTEM_MESSAGE, 10);
+
+            PlayerInfo pInfo = Players.Find(p => p.Name.Equals(ProgramConstants.PLAYERNAME));
+            if (pInfo != null)
+            {
+                pInfo.Ping = tunnelHandler.CurrentTunnel.PingInMs;
+                UpdatePlayerPingIndicator(pInfo);
+            }
         }
 
         private void PrintTunnelServerInformation(string s)
         {
-            AddNotice($"当前隧道服务器： {tunnel.Name} ({tunnel.Country}) " +
-                $"(玩家数： {tunnel.Clients}/{tunnel.MaxClients}) (官方： {tunnel.Official})");
+            if (tunnelHandler.CurrentTunnel == null)
+            {
+                AddNotice("Tunnel server unavailable!");
+            }
+            else
+            {
+                AddNotice($"Current tunnel server: {tunnelHandler.CurrentTunnel.Name} ({tunnelHandler.CurrentTunnel.Country}) " +
+                    $"(Players: {tunnelHandler.CurrentTunnel.Clients}/{tunnelHandler.CurrentTunnel.MaxClients}) (Official: {tunnelHandler.CurrentTunnel.Official})");
+            }
         }
 
         private void ShowTunnelSelectionWindow(string description)
         {
             tunnelSelectionWindow.Open(description,
-                tunnel.Address);
+                tunnelHandler.CurrentTunnel?.Address);
             tunnelSelectionWindow.TunnelSelected += TunnelSelectionWindow_TunnelSelected;
         }
 
         private void TunnelSelectionWindow_TunnelSelected(object sender, TunnelEventArgs e)
         {
             tunnelSelectionWindow.TunnelSelected -= TunnelSelectionWindow_TunnelSelected;
-            channel.SendCTCPMessage(CHANGE_TUNNEL_SERVER_MESSAGE + " " + e.Tunnel.Address,
-                QueuedMessageType.SYSTEM_MESSAGE, 10);
+            channel.SendCTCPMessage($"{CHANGE_TUNNEL_SERVER_MESSAGE} {e.Tunnel.Address}:{e.Tunnel.Port}", QueuedMessageType.SYSTEM_MESSAGE, 10);
             HandleTunnelServerChange(e.Tunnel);
         }
 
@@ -315,6 +329,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             tbChatInput.Text = string.Empty;
 
+            tunnelHandler.CurrentTunnel = null;
+            tunnelHandler.CurrentTunnelPinged -= TunnelHandler_CurrentTunnelPinged;
             GameLeft?.Invoke(this, EventArgs.Empty);
 
             TopBar.RemovePrimarySwitchable(this);
@@ -544,8 +560,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             {
                 AddNotice("连接至隧道服..");
 
-                List<int> playerPorts = tunnel.GetPlayerPortInfo(Players.Count);
-
+                List<int> playerPorts = tunnelHandler.CurrentTunnel.GetPlayerPortInfo(Players.Count);
                 if (playerPorts.Count < Players.Count)
                 {
                     ShowTunnelSelectionWindow("在连接CnCNet隧道服" +
@@ -1206,8 +1221,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         {
             base.WriteSpawnIniAdditions(iniFile);
 
-            iniFile.SetStringValue("Tunnel", "Ip", tunnel.Address);
-            iniFile.SetIntValue("Tunnel", "Port", tunnel.Port);
+            iniFile.SetStringValue("Tunnel", "Ip", tunnelHandler.CurrentTunnel.Address);
+            iniFile.SetIntValue("Tunnel", "Port", tunnelHandler.CurrentTunnel.Port);
+
 
             iniFile.SetIntValue("Settings", "GameID", UniqueGameID);
             iniFile.SetBooleanValue("Settings", "Host", IsHost);
@@ -1325,10 +1341,13 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 pInfo.IsInGame = false;
         }
 
-        private void TunnelPingNotification(string sender, int ping)
+        private void HandleTunnelPing(string sender, int ping)
         {
-            if (ping > -1)
+            PlayerInfo pInfo = Players.Find(p => p.Name.Equals(sender));
+            if (pInfo != null)
             {
+                pInfo.Ping = ping;
+                UpdatePlayerPingIndicator(pInfo);
                 AddNotice(sender + "的延迟：" + ping + " ms。");
             }
             else
@@ -1445,13 +1464,16 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             AddNotice(sender + "在客户端会话期间修改了游戏文件。他很有可能在作弊！", Color.Red);
         }
 
-        private void HandleTunnelServerChangeMessage(string sender, string tunnelAddress)
+        private void HandleTunnelServerChangeMessage(string sender, string tunnelAddressAndPort)
         {
             if (sender != hostName)
                 return;
 
-            CnCNetTunnel tunnel = tunnelHandler.Tunnels.Find(t => t.Address == tunnelAddress);
-            if (tunnel == null)
+            string[] split = tunnelAddressAndPort.Split(':');
+            string tunnelAddress = split[0];
+            int tunnelPort = int.Parse(split[1]);
+
+            CnCNetTunnel tunnel = tunnelHandler.Tunnels.Find(t => t.Address == tunnelAddress && t.Port == tunnelPort); if (tunnel == null)
             {
                 AddNotice("房主选择了一个无效的隧道服务器！" +
                     "房主需要更换服务器，" +
@@ -1471,9 +1493,10 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         /// <param name="tunnel">The new tunnel server to use.</param>
         private void HandleTunnelServerChange(CnCNetTunnel tunnel)
         {
-            this.tunnel = tunnel;
+            tunnelHandler.CurrentTunnel = tunnel;
             AddNotice($"房主把隧道服务器换成了：" +
                 $"{tunnel.Name} (你的延迟： {tunnel.PingInMs} ms)。");
+            UpdatePing();
         }
 
         #region CnCNet map sharing
@@ -1498,9 +1521,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             channel.SendCTCPMessage(MAP_SHARING_UPLOAD_REQUEST + " " + e.SHA1, QueuedMessageType.SYSTEM_MESSAGE, 9);
         }
 
-        private void MapSharer_MapDownloadComplete(object sender, SHA1EventArgs e)
-            => WindowManager.AddCallback(new Action<SHA1EventArgs>(MapSharer_HandleMapDownloadComplete), e);
-
+        private void MapSharer_MapDownloadComplete(object sender, SHA1EventArgs e) =>
+           WindowManager.AddCallback(new Action<SHA1EventArgs>(MapSharer_HandleMapDownloadComplete), e);
         private void MapSharer_HandleMapDownloadComplete(SHA1EventArgs e)
         {
             Logger.Log("Map " + e.SHA1 + " downloaded, parsing.");
@@ -1713,7 +1735,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             sb.Append(";");
             sb.Append(GameMode.UIName);
             sb.Append(";");
-            sb.Append(tunnel.Address);
+            sb.Append(tunnelHandler.CurrentTunnel.Address + ":" + tunnelHandler.CurrentTunnel.Port);
             sb.Append(";");
             sb.Append(0); // LoadedGameId
 
