@@ -13,6 +13,7 @@ using DTAClient.Domain.Multiplayer;
 using ClientGUI;
 using System.Text;
 using DTAClient.Domain;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace DTAClient.DXGUI.Multiplayer.GameLobby
 {
@@ -79,6 +80,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         protected EnhancedSoundEffect sndMessageSound;
         protected EnhancedSoundEffect sndGetReadySound;
 
+        protected Texture2D[] PingTextures;
+
         protected TopBar TopBar;
 
         protected int FrameSendRate { get; set; } = 7;
@@ -104,16 +107,22 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         /// Allows derived classes to add their own chat box commands.
         /// </summary>
         /// <param name="command">The command to add.</param>
-        protected void AddChatBoxCommand(ChatBoxCommand command)
-        {
-            chatBoxCommands.Add(command);
-        }
+        protected void AddChatBoxCommand(ChatBoxCommand command) => chatBoxCommands.Add(command);
 
         public override void Initialize()
         {
-            Name = "MultiplayerGameLobby";
+            Name = nameof(MultiplayerGameLobby);
 
             base.Initialize();
+
+            PingTextures = new Texture2D[5]
+            {
+                AssetLoader.LoadTexture("ping0.png"),
+                AssetLoader.LoadTexture("ping1.png"),
+                AssetLoader.LoadTexture("ping2.png"),
+                AssetLoader.LoadTexture("ping3.png"),
+                AssetLoader.LoadTexture("ping4.png")
+            };
 
             InitPlayerOptionDropdowns();
 
@@ -850,40 +859,28 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             HostLaunchGame();
         }
 
-        protected virtual void LockGameNotification()
-        {
+        protected virtual void LockGameNotification() =>
             AddNotice("开始游戏前需要锁定房间。");
-        }
 
-        protected virtual void SharedColorsNotification()
-        {
+        protected virtual void SharedColorsNotification() =>
             AddNotice("玩家不能使用同样的颜色。");
-        }
 
-        protected virtual void AISpectatorsNotification()
-        {
+        protected virtual void AISpectatorsNotification() =>
             AddNotice("AI不想只是看着，他们想参与！");
-        }
 
-        protected virtual void SharedStartingLocationNotification()
-        {
+        protected virtual void SharedStartingLocationNotification() =>
             AddNotice("玩家不能占据相同的起始位置。");
-        }
 
         protected virtual void NotVerifiedNotification(int playerIndex)
         {
             if (playerIndex > -1 && playerIndex < Players.Count)
-            {
                 AddNotice(string.Format("无法开启游戏；玩家 {0} 无法被证实。", Players[playerIndex].Name));
-            }
         }
 
         protected virtual void StillInGameNotification(int playerIndex)
         {
             if (playerIndex > -1 && playerIndex < Players.Count)
-            {
-                AddNotice("无法开启游戏；玩家" + Players[playerIndex].Name + "仍在你之前的游戏中游玩。");
-            }
+                AddNotice("无法开启游戏。玩家 " + Players[playerIndex].Name + " 仍在你之前的游戏中游玩。");
         }
 
         protected virtual void GetReadyNotification()
@@ -922,11 +919,6 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         protected abstract void HostLaunchGame();
 
-        protected override void BtnLeaveGame_LeftClick(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override void CopyPlayerDataFromUI(object sender, EventArgs e)
         {
             if (PlayerUpdatingInProgress)
@@ -959,17 +951,18 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             base.CopyPlayerDataToUI();
 
+            ClearPingIndicators();
+
             if (IsHost)
             {
                 for (int pId = 1; pId < Players.Count; pId++)
-                {
                     ddPlayerNames[pId].AllowDropDown = true;
-                }
             }
 
             for (int pId = 0; pId < Players.Count; pId++)
             {
                 ReadyBoxes[pId].Checked = Players[pId].Ready;
+                UpdatePlayerPingIndicator(Players[pId]);
             }
 
             for (int aiId = 0; aiId < AIPlayers.Count; aiId++)
@@ -983,23 +976,46 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             }
         }
 
+        protected void ClearPingIndicators()
+        {
+            foreach (XNADropDown dd in ddPlayerNames)
+                dd.Items[0].Texture = null;
+        }
+
+        protected void UpdatePlayerPingIndicator(PlayerInfo pInfo)
+        {
+            XNADropDown ddPlayerName = ddPlayerNames[pInfo.Index];
+            ddPlayerName.Items[0].Texture = GetTextureForPing(pInfo.Ping);
+        }
+
+        private Texture2D GetTextureForPing(int ping)
+        {
+            switch (ping)
+            {
+                case int p when (p > 350):
+                    return PingTextures[4];
+                case int p when (p > 250):
+                    return PingTextures[3];
+                case int p when (p > 100):
+                    return PingTextures[2];
+                case int p when (p >= 0):
+                    return PingTextures[1];
+                default:
+                    return PingTextures[0];
+            }
+        }
+
         protected abstract void BroadcastPlayerOptions();
 
         protected abstract void RequestPlayerOptions(int side, int color, int start, int team);
 
         protected abstract void RequestReadyStatus();
 
-        protected void AddNotice(string message)
-        {
-            AddNotice(message, Color.White);
-        }
+        protected void AddNotice(string message) => AddNotice(message, Color.White);
 
         protected abstract void AddNotice(string message, Color color);
 
-        protected override bool AllowPlayerOptionsChange()
-        {
-            return IsHost;
-        }
+        protected override bool AllowPlayerOptionsChange() => IsHost;
 
         protected override void ChangeMap(GameMode gameMode, Map map)
         {
@@ -1031,17 +1047,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             return -1;
         }
 
-        public void SwitchOn()
-        {
-            Enabled = true;
-            Visible = true;
-        }
+        public void SwitchOn() => Enable();
 
-        public void SwitchOff()
-        {
-            Enabled = false;
-            Visible = false;
-        }
+        public void SwitchOff() => Disable();
 
         public abstract string GetSwitchName();
 

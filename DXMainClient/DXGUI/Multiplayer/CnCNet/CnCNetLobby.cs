@@ -168,7 +168,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             playerContextMenu.AddItem("添加好友", () => 
                 PerformUserListContextMenuAction(iu => ToggleFriend(iu.Name)));
             playerContextMenu.AddItem("忽略用户", () => 
-                PerformUserListContextMenuAction(iu => ToggleIgnoreUser(iu.Ident)));
+                PerformUserListContextMenuAction(iu => ToggleIgnoreUser(iu)));
 
             lbChatMessages = new ChatListBox(WindowManager);
             lbChatMessages.Name = "lbChatMessages";
@@ -311,7 +311,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 if (chatChannel == null)
                 {
                     chatChannel = connectionManager.CreateChannel(game.UIName, game.ChatChannel,
-                        true, "ra1-derp");
+                        true, true, "ra1-derp");
                     connectionManager.AddChannel(chatChannel);
                 }
 
@@ -324,7 +324,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                     if (gameBroadcastChannel == null)
                     {
                         gameBroadcastChannel = connectionManager.CreateChannel(game.UIName + " Broadcast Channel",
-                            game.GameBroadcastChannel, true, null);
+                            game.GameBroadcastChannel, true, false, null);
                         connectionManager.AddChannel(gameBroadcastChannel);
                     }
 
@@ -486,11 +486,11 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 return;
             }
 
-            IRCUser ircUser = currentChatChannel.Users[lbPlayerList.SelectedIndex].IRCUser;
-            bool isAdmin = currentChatChannel.Users[lbPlayerList.SelectedIndex].IsAdmin;
+            var user = (ChannelUser)lbPlayerList.SelectedItem.Tag;
+            bool isAdmin = user.IsAdmin;
 
-            playerContextMenu.Items[1].Text = cncnetUserData.IsFriend(ircUser.Name) ? "删除好友" : "添加好友";
-            playerContextMenu.Items[2].Text = cncnetUserData.IsIgnored(ircUser.Ident) && !isAdmin ? "解锁" : "锁定";
+            playerContextMenu.Items[1].Text = cncnetUserData.IsFriend(user.IRCUser.Name) ? "删除好友" : "添加好友";
+            playerContextMenu.Items[2].Text = cncnetUserData.IsIgnored(user.IRCUser.Ident) && !isAdmin ? "解锁" : "锁定";
             playerContextMenu.Items[2].Selectable = !isAdmin;
 
             playerContextMenu.Open(GetCursorPoint());
@@ -504,7 +504,8 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 return;
             }
 
-            IRCUser ircUser = currentChatChannel.Users[lbPlayerList.SelectedIndex].IRCUser;
+            var user = (ChannelUser)lbPlayerList.SelectedItem.Tag;
+            IRCUser ircUser = user.IRCUser;
 
             action(ircUser);
         }
@@ -529,10 +530,10 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
         /// they already are on the ignore list.
         /// </summary>
         /// <param name="ident">The ident of the IRCUser.</param>
-        private void ToggleIgnoreUser(string ident)
+        private void ToggleIgnoreUser(IRCUser ircUser)
         {
-            cncnetUserData.ToggleIgnoreUser(ident);
-            ChannelUser user = currentChatChannel.Users.Find(x => x.IRCUser.Ident == ident);
+            cncnetUserData.ToggleIgnoreUser(ircUser.Ident);
+            ChannelUser user = (ChannelUser)lbPlayerList.SelectedItem.Tag;
             if (user != null)
                 RefreshPlayerListUser(user);
         }
@@ -545,7 +546,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
         private void ToggleFriend(string name)
         {
             cncnetUserData.ToggleFriend(name);
-            ChannelUser user = currentChatChannel.Users.Find(x => x.IRCUser.Name == name);
+            ChannelUser user = currentChatChannel.Users.Find(name);
             if (user != null)
                 RefreshPlayerListUser(user);
         }
@@ -694,7 +695,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             isJoiningGame = true;
             gameOfLastJoinAttempt = hg;
 
-            Channel gameChannel = connectionManager.CreateChannel(hg.RoomName, hg.ChannelName, false, password);
+            Channel gameChannel = connectionManager.CreateChannel(hg.RoomName, hg.ChannelName, false, true, password);
             connectionManager.AddChannel(gameChannel);
 
             if (hg.IsLoadedGame)
@@ -818,7 +819,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 isCustomPassword = false;
             }
 
-            Channel gameChannel = connectionManager.CreateChannel(e.GameRoomName, channelName, false, password);
+            Channel gameChannel = connectionManager.CreateChannel(e.GameRoomName, channelName, false, true, password);
             connectionManager.AddChannel(gameChannel);
             gameLobby.SetUp(gameChannel, true, e.MaxPlayers, e.Tunnel, ProgramConstants.PLAYERNAME, isCustomPassword);
             gameChannel.UserAdded += GameChannel_UserAdded;
@@ -838,7 +839,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             string channelName = RandomizeChannelName();
 
-            Channel gameLoadingChannel = connectionManager.CreateChannel(e.GameRoomName, channelName, false, e.Password);
+            Channel gameLoadingChannel = connectionManager.CreateChannel(e.GameRoomName, channelName, false, true, e.Password);
             connectionManager.AddChannel(gameLoadingChannel);
             gameLoadingLobby.SetUp(true, e.Tunnel, gameLoadingChannel, ProgramConstants.PLAYERNAME);
             gameLoadingChannel.UserAdded += GameLoadingChannel_UserAdded;
@@ -955,7 +956,6 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             Channel cncnetChannel = connectionManager.FindChannel("#cncnet");
             cncnetChannel.Join();
-            cncnetChannel.RequestUserInfo();
 
             string localGameChatChannelName = gameCollection.GetGameChatChannelNameFromIdentifier(localGameID);
             bool chatChannelMissing = false;
@@ -968,7 +968,6 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             {
                 Channel localGameChatChannel = connectionManager.FindChannel(localGameChatChannelName);
                 localGameChatChannel.Join();
-                localGameChatChannel.RequestUserInfo();
             }
 
             string localGameBroadcastChannel = gameCollection.GetGameBroadcastingChannelNameFromIdentifier(localGameID);
@@ -1027,8 +1026,10 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                     currentChatChannel.ChannelName != gameCollection.GetGameChatChannelNameFromIdentifier(localGameID))
                 {
                     // Remove the assigned channels from the users so we don't have ghost users on the PM user list
-                    foreach (var user in currentChatChannel.Users)
+                    currentChatChannel.Users.DoForAllUsers(user =>
+                    {
                         connectionManager.RemoveChannelFromUser(user.IRCUser.Name, currentChatChannel.ChannelName);
+                    });
 
                     currentChatChannel.Leave();
                 }
@@ -1056,7 +1057,6 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 currentChatChannel.ChannelName != gameCollection.GetGameChatChannelNameFromIdentifier(localGameID))
             {
                 currentChatChannel.Join();
-                currentChatChannel.RequestUserInfo();
             }
         }
 
@@ -1067,11 +1067,14 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             lbPlayerList.Clear();
 
-            foreach (ChannelUser user in currentChatChannel.Users)
+            var current = currentChatChannel.Users.GetFirst();
+            while (current != null)
             {
+                var user = current.Value;
                 user.IRCUser.IsFriend = cncnetUserData.IsFriend(user.IRCUser.Name);
-                user.IRCUser.IsIgnored = cncnetUserData.IsIgnored(user.IRCUser.Ident);
+                user.IRCUser.IsIgnored = cncnetUserData.IsIgnored(user.IRCUser.Name);
                 lbPlayerList.AddUser(user);
+                current = current.Next;
             }
 
             if (selectedUserName != string.Empty)
@@ -1124,7 +1127,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
         /// Removes a game from the list when the host quits CnCNet or
         /// leaves the game broadcast channel.
         /// </summary>
-        private void GameBroadcastChannel_UserLeftOrQuit(object sender, UserNameIndexEventArgs e)
+        private void GameBroadcastChannel_UserLeftOrQuit(object sender, UserNameEventArgs e)
         {
             int gameIndex = lbGameList.HostedGames.FindIndex(hg => hg.HostName == e.UserName);
 
@@ -1136,7 +1139,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
         {
             var channel = (Channel)sender;
 
-            var channelUser = channel.Users.Find(u => u.IRCUser.Name == e.UserName);
+            var channelUser = channel.Users.Find(e.UserName);
 
             if (channelUser == null)
                 return;
@@ -1189,13 +1192,17 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 List<string> playerNames = players.ToList();
                 string mapName = splitMessage[7];
                 string gameMode = splitMessage[8];
-                string tunnelAddress = splitMessage[9];
+
+                string[] tunnelAddressPort = splitMessage[9].Split(':');
+                string tunnelAddress = tunnelAddressPort[0];
+                int tunnelPort = int.Parse(tunnelAddressPort[1]);
+
                 string loadedGameId = splitMessage[10];
                 bool isRA2Mode = 11 < splitMessage.Length ? Conversions.BooleanFromString(splitMessage[11], false) : false;
 
                 CnCNetGame cncnetGame = gameCollection.GameList.Find(g => g.GameBroadcastChannel == channel.ChannelName);
 
-                CnCNetTunnel tunnel = tunnelHandler.Tunnels.Find(t => t.Address == tunnelAddress);
+                CnCNetTunnel tunnel = tunnelHandler.Tunnels.Find(t => t.Address == tunnelAddress && t.Port == tunnelPort);
 
                 if (tunnel == null)
                     return;

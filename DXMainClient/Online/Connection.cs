@@ -81,6 +81,12 @@ namespace DTAClient.Online
             get { return _attemptingConnection; }
         }
 
+        Random _rng = new Random();
+        public Random Rng
+        {
+            get { return _rng; }
+        }
+
         private List<QueuedMessage> MessageQueue = new List<QueuedMessage>();
         private TimeSpan MessageQueueDelay;
 
@@ -579,7 +585,7 @@ namespace DTAClient.Online
                         string modeUserName = prefix.Substring(0, prefix.IndexOf('!'));
                         string modeChannelName = parameters[0];
                         string modeString = parameters[1];
-                        List<string> modeParameters = 
+                        List<string> modeParameters =
                             parameters.Count > 2 ? parameters.GetRange(2, parameters.Count - 2) : new List<string>();
                         connectionManager.OnChannelModesChanged(modeUserName, modeChannelName, modeString, modeParameters);
                         break;
@@ -703,10 +709,27 @@ namespace DTAClient.Online
 
                 lock (messageQueueLocker)
                 {
-                    if (MessageQueue.Count > 0)
+                    for (int i = 0; i < MessageQueue.Count; i++)
                     {
-                        message = MessageQueue[0].Command;
-                        MessageQueue.RemoveAt(0);
+                        QueuedMessage qm = MessageQueue[i];
+                        if (qm.Delay > 0)
+                        {
+                            if (qm.SendAt < DateTime.Now)
+                            {
+                                message = qm.Command;
+
+                                Logger.Log("Delayed message sent: " + qm.ID);
+
+                                MessageQueue.RemoveAt(i);
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            message = qm.Command;
+                            MessageQueue.RemoveAt(i);
+                            break;
+                        }
                     }
                 }
 
@@ -752,7 +775,7 @@ namespace DTAClient.Online
 
             string realname = ProgramConstants.GAME_VERSION + " " + defaultGame + " CnCNet";
 
-            SendMessage(string.Format("USER {0} 0 * :{1}", defaultGame + "." + 
+            SendMessage(string.Format("USER {0} 0 * :{1}", defaultGame + "." +
                 systemId, realname));
 
             SendMessage("NICK " + ProgramConstants.PLAYERNAME);
@@ -767,6 +790,13 @@ namespace DTAClient.Online
         {
             QueuedMessage qm = new QueuedMessage(message, type, priority);
             QueueMessage(qm);
+        }
+
+        public void QueueMessage(QueuedMessageType type, int priority, int delay, string message)
+        {
+            QueuedMessage qm = new QueuedMessage(message, type, priority, delay);
+            QueueMessage(qm);
+            Logger.Log("Setting delay to " + delay + "ms for " + qm.ID);
         }
 
         /// <summary>
@@ -795,6 +825,7 @@ namespace DTAClient.Online
             }
         }
 
+        private int NextQueueID { get; set; } = 0;
         /// <summary>
         /// Adds a message to the send queue.
         /// </summary>
@@ -803,6 +834,8 @@ namespace DTAClient.Online
         {
             if (!_isConnected)
                 return;
+
+            qm.ID = NextQueueID++;
 
             lock (messageQueueLocker)
             {
@@ -844,6 +877,8 @@ namespace DTAClient.Online
         private void AddSpecialQueuedMessage(QueuedMessage qm)
         {
             int broadcastingMessageIndex = MessageQueue.FindIndex(m => m.MessageType == qm.MessageType);
+
+            qm.ID = NextQueueID++;
 
             if (broadcastingMessageIndex > -1)
             {
