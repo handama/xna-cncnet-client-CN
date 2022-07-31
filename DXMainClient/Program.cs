@@ -57,7 +57,9 @@ namespace DTAClient
             "MapThumbnailExtractor",
             "DTAUpdater",
             "Newtonsoft.Json",
-            "DiscordRPC"
+            "DiscordRPC",
+            "Localization",
+            "IMEHelper.Window"
         };
 
         static List<string> SPECIFIC_LIBRARIES = new List<string>()
@@ -68,7 +70,8 @@ namespace DTAClient
             "MonoGame.Framework",
             "Rampastring.XNAUI",
             "Sdl",
-            "soft_oal"
+            "soft_oal",
+            "IMEHelper.Window"
         };
 
         private static string COMMON_LIBRARY_PATH;

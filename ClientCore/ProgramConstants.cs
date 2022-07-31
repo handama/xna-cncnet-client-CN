@@ -35,6 +35,11 @@ namespace ClientCore
         public const string SPAWNER_SETTINGS = "spawn.ini";
         public const string SAVED_GAME_SPAWN_INI = "Saved Games\\spawnSG.ini";
 
+        public static string PhobosDevBuildPrefix = "Build #";
+        public static string PhobosName = "Phobos.dll";
+        public static string PhobosPrefix = "-b=";
+        public static string PhobosPath = GamePath + PhobosName;
+
         public static readonly Encoding LAN_ENCODING = Encoding.UTF8;
 
         public static string GAME_VERSION = "1.15";
@@ -63,7 +68,6 @@ namespace ClientCore
         {
             return GamePath + RESOURCES_DIR;
         }
-
         public static string GetBaseResourcePath()
         {
             return GamePath + BASE_RESOURCE_PATH;

@@ -2,6 +2,20 @@
 
 The MonoGame / XNA CnCNet client, a platform for playing classic Command & Conquer games and their mods both online and offline. Supports setting up and launching both singleplayer and multiplayer games with [a CnCNet game spawner](https://github.com/CnCNet/ts-patches). Includes an IRC-based chat client with advanced features like private messaging, a friend list, a configurable game lobby, flexible and moddable UI graphics, and extras like game setting configuration and keeping track of match statistics. And much more!
 
+新功能
+-------
+（待补全）
+* 大部分界面的汉化
+* 中文输入
+* 自定义IRC服务器
+* 载入根目录地图
+* 不限制地图拓展名
+* 自定义第三方地图目录名
+* (phobos)为ToolTipDescriptions提供选项
+* 每张地图可自定义是否使用客户端随机位置
+* 设置中自定义命令行参数
+* 自动为dev版phobos添加命令行参数
+
 Targets
 -------
 

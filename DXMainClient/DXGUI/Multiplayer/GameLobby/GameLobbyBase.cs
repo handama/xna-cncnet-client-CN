@@ -35,6 +35,47 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         private const int RANK_MEDIUM = 2;
         private const int RANK_HARD = 3;
 
+        public string ra2ModePath = ProgramConstants.GetBaseResourcePath() + "ra2mode\\";
+        public List<string> ra2ModefilesFullName = new List<string>();
+        public List<string> ra2ModefilesName = new List<string>();
+
+
+        public void CreateRa2FileList()
+        {
+            if (Directory.Exists(ra2ModePath))
+            {
+                DirectoryInfo folder = new DirectoryInfo(ra2ModePath);
+                foreach (FileInfo file in folder.GetFiles("*"))
+                {
+                    ra2ModefilesFullName.Add(file.FullName);
+                    ra2ModefilesName.Add(file.Name);
+                }
+            }
+        }
+        public void CopyRa2Files()
+        {
+            int i = 0;
+            for (; i < ra2ModefilesName.Count;)
+            {
+                if (File.Exists(ra2ModefilesFullName[i]))
+                {
+                    File.Copy(ra2ModefilesFullName[i], ProgramConstants.GamePath + ra2ModefilesName[i], true);
+                }
+                i++;
+            }
+        }
+        public void DeleteRa2Files()
+        {
+            int i = 0;
+            for (; i < ra2ModefilesName.Count;)
+            {
+                if (File.Exists(ProgramConstants.GamePath + ra2ModefilesName[i]))
+                {
+                    File.Delete(ProgramConstants.GamePath + ra2ModefilesName[i]);
+                }
+                i++;
+            }
+        }
         /// <summary>
         /// Creates a new instance of the game lobby base.
         /// </summary>
@@ -59,6 +100,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         protected List<GameLobbyCheckBox> CheckBoxes = new List<GameLobbyCheckBox>();
         protected List<GameLobbyDropDown> DropDowns = new List<GameLobbyDropDown>();
+
 
         protected DiscordHandler discordHandler;
 
@@ -130,9 +172,13 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         protected XNASuggestionTextBox tbMapSearch;
 
+        protected XNAClientDropDown ddplayerNumbers;
+        protected XNAClientDropDown ddAuthor;
+
         protected List<PlayerInfo> Players = new List<PlayerInfo>();
         protected List<PlayerInfo> AIPlayers = new List<PlayerInfo>();
 
+        protected virtual PlayerInfo FindLocalPlayer() => Players.Find(p => p.Name == ProgramConstants.PLAYERNAME);
         protected bool PlayerUpdatingInProgress { get; set; }
 
         protected Texture2D[] RankTextures;
@@ -164,6 +210,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         private MatchStatistics matchStatistics;
 
         private bool disableGameOptionUpdateBroadcast = false;
+        private XNALabel lblPlayerNumbers;
+        private XNALabel lblAuthor;
 
         /// <summary>
         /// If set, the client will remove all starting waypoints from the map
@@ -209,13 +257,13 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             btnLeaveGame = new XNAClientButton(WindowManager);
             btnLeaveGame.Name = "btnLeaveGame";
             btnLeaveGame.ClientRectangle = new Rectangle(Width - 143, Height - 28, 133, 23);
-            btnLeaveGame.Text = "Leave Game";
+            btnLeaveGame.Text = "离开游戏";
             btnLeaveGame.LeftClick += BtnLeaveGame_LeftClick;
 
             btnLaunchGame = new GameLaunchButton(WindowManager, RankTextures);
             btnLaunchGame.Name = "btnLaunchGame";
             btnLaunchGame.ClientRectangle = new Rectangle(12, btnLeaveGame.Y, 133, 23);
-            btnLaunchGame.Text = "Launch Game";
+            btnLaunchGame.Text = "进入游戏";
             btnLaunchGame.LeftClick += BtnLaunchGame_LeftClick;
 
             MapPreviewBox = new MapPreviewBox(WindowManager, Players, AIPlayers, MPColors,
@@ -233,30 +281,30 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             lblMapName = new XNALabel(WindowManager);
             lblMapName.Name = "lblMapName";
             lblMapName.ClientRectangle = new Rectangle(MapPreviewBox.X,
-                MapPreviewBox.Bottom + 3, 0, 0);
+                MapPreviewBox.Bottom + 4, 0, 0);
             lblMapName.FontIndex = 1;
-            lblMapName.Text = "Map:";
+            lblMapName.Text = "地图：";
 
             lblMapAuthor = new XNALabel(WindowManager);
             lblMapAuthor.Name = "lblMapAuthor";
             lblMapAuthor.ClientRectangle = new Rectangle(MapPreviewBox.Right,
                 lblMapName.Y, 0, 0);
             lblMapAuthor.FontIndex = 1;
-            lblMapAuthor.Text = "By ";
+            lblMapAuthor.Text = "作者：";
 
             lblGameMode = new XNALabel(WindowManager);
             lblGameMode.Name = "lblGameMode";
             lblGameMode.ClientRectangle = new Rectangle(lblMapName.X,
                 lblMapName.Bottom + 3, 0, 0);
             lblGameMode.FontIndex = 1;
-            lblGameMode.Text = "Game mode:";
+            lblGameMode.Text = "游戏模式：";
 
             lblMapSize = new XNALabel(WindowManager);
             lblMapSize.Name = "lblMapSize";
-            lblMapSize.ClientRectangle = new Rectangle(lblGameMode.ClientRectangle.X,
-                lblGameMode.ClientRectangle.Bottom + 3, 0, 0);
+            lblMapSize.ClientRectangle = new Rectangle(lblMapName.X,
+                lblGameMode.Bottom + 3, 0, 0);
             lblMapSize.FontIndex = 1;
-            lblMapSize.Text = "Size: ";
+            lblMapSize.Text = "地图大小：";
             lblMapSize.Visible = false;
 
             lbMapList = new XNAMultiColumnListBox(WindowManager);
@@ -276,7 +324,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             mapContextMenu = new XNAContextMenu(WindowManager);
             mapContextMenu.Name = nameof(mapContextMenu);
             mapContextMenu.Width = 100;
-            mapContextMenu.AddItem("Delete Map", DeleteMapConfirmation, () => Map != null && !Map.Official);
+            mapContextMenu.AddItem("删除地图", DeleteMapConfirmation, () => Map != null && !Map.Official);
             AddChild(mapContextMenu);
 
             XNAPanel rankHeader = new XNAPanel(WindowManager);
@@ -289,7 +337,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             lbMapList.AddColumn(rankHeader, rankListBox);
 
-            lbMapList.AddColumn("MAP NAME", lbMapList.Width - RankTextures[1].Width - 3);
+            lbMapList.AddColumn("地图名", lbMapList.Width - RankTextures[1].Width - 3);
 
             ddGameMode = new XNAClientDropDown(WindowManager);
             ddGameMode.Name = "ddGameMode";
@@ -303,24 +351,58 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             lblGameModeSelect.Name = "lblGameModeSelect";
             lblGameModeSelect.ClientRectangle = new Rectangle(lbMapList.X, ddGameMode.Y + 2, 0, 0);
             lblGameModeSelect.FontIndex = 1;
-            lblGameModeSelect.Text = "GAME MODE:";
+            lblGameModeSelect.Text = "游戏模式";
 
             tbMapSearch = new XNASuggestionTextBox(WindowManager);
             tbMapSearch.Name = "tbMapSearch";
             tbMapSearch.ClientRectangle = new Rectangle(lbMapList.X,
-                lbMapList.Bottom + 3, lbMapList.Width, 21);
-            tbMapSearch.Suggestion = "Search map..";
+                lbMapList.Bottom + 3, lbMapList.Width /2 -1, 21);
+            tbMapSearch.Suggestion = "搜索地图...";
             tbMapSearch.MaximumTextLength = 64;
             tbMapSearch.InputReceived += TbMapSearch_InputReceived;
 
             btnPickRandomMap = new XNAClientButton(WindowManager);
             btnPickRandomMap.Name = "btnPickRandomMap";
             btnPickRandomMap.ClientRectangle = new Rectangle(btnLaunchGame.Right + 157 , btnLaunchGame.Y, 133, 23);
-            btnPickRandomMap.Text = "Pick Random Map";
+            btnPickRandomMap.Text = "随机选择地图";
             btnPickRandomMap.LeftClick += BtnPickRandomMap_LeftClick;
             btnPickRandomMap.Disable();
 
+            lblPlayerNumbers = new XNALabel(WindowManager);
+            lblPlayerNumbers.Name = "lblPlayerNumbers";
+            lblPlayerNumbers.ClientRectangle = new Rectangle(lbMapList.X, ddGameMode.Y + 2, 0, 0);
+            lblPlayerNumbers.FontIndex = 1;
+            lblPlayerNumbers.Text = "玩家数量";
+
+            lblAuthor = new XNALabel(WindowManager);
+            lblAuthor.Name = "lblAuthor";
+            lblAuthor.ClientRectangle = new Rectangle(lbMapList.X, ddGameMode.Y + 2, 0, 0);
+            lblAuthor.FontIndex = 1;
+            lblAuthor.Text = "作者";
+
+            ddplayerNumbers = new XNAClientDropDown(WindowManager);
+            ddplayerNumbers.Name = "ddplayerNumbers";
+            ddplayerNumbers.ClientRectangle = new Rectangle(lbMapList.X + lbMapList.Width / 2 + 1,
+                lbMapList.Bottom + 3, lbMapList.Width / 2 - 1, 21);
+            ddplayerNumbers.AddItem("-");
+            ddplayerNumbers.AddItem("2");
+            ddplayerNumbers.AddItem("3");
+            ddplayerNumbers.AddItem("4");
+            ddplayerNumbers.AddItem("5");
+            ddplayerNumbers.AddItem("6");
+            ddplayerNumbers.AddItem("7");
+            ddplayerNumbers.AddItem("8");
+            ddplayerNumbers.AllowDropDown = true;
+            ddplayerNumbers.SelectedIndex = 0;
+            ddplayerNumbers.SelectedIndexChanged += MapScreenActived;
+            ddplayerNumbers.Tag = true;
+
+            AddChild(ddplayerNumbers);
+            
+
             AddChild(lblMapName);
+            AddChild(lblPlayerNumbers);
+            AddChild(lblAuthor);
             AddChild(lblMapAuthor);
             AddChild(lblGameMode);
             AddChild(lblMapSize);
@@ -367,6 +449,30 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 dropdown.SelectedIndexChanged += Dropdown_SelectedIndexChanged;
             }
 
+            ddAuthor = new XNAClientDropDown(WindowManager);
+            ddAuthor.Name = "ddAuthor";
+            ddAuthor.ClientRectangle = new Rectangle(lbMapList.X + lbMapList.Width / 2 + 1,
+                lbMapList.Bottom + 3, lbMapList.Width / 2 - 1, 21);
+           
+            var mpMapsIni = new IniFile(ProgramConstants.GamePath + ClientConfiguration.Instance.MPMapsIniPath);
+            List<string> authorListIndex = mpMapsIni.GetSectionKeys("AuthorList");
+            List<string> authorList = new List<string>();
+            foreach (string index in authorListIndex)
+            {
+                authorList.Add(mpMapsIni.GetStringValue("AuthorList", index, ""));
+            }
+
+            ddAuthor.AddItem("-");
+            foreach (string author in authorList)
+            {
+                ddAuthor.AddItem(author);
+            }
+            ddAuthor.SelectedIndex = 0;
+            ddAuthor.AllowDropDown = true;
+            ddAuthor.SelectedIndexChanged += MapScreenActived;
+            ddAuthor.Tag = true;
+
+            AddChild(ddAuthor);
             AddChild(PlayerOptionsPanel);
             AddChild(btnLaunchGame);
             AddChild(btnLeaveGame);
@@ -379,6 +485,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         }
 
         private void TbMapSearch_InputReceived(object sender, EventArgs e)
+        {
+            ListMaps();
+        }
+
+        private void MapScreenActived(object sender, EventArgs e)
         {
             ListMaps();
         }
@@ -424,6 +535,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             tbMapSearch.Text = string.Empty;
             tbMapSearch.OnSelectedChanged();
+            ddplayerNumbers.OnSelectedChanged();
 
             ListMaps();
 
@@ -450,6 +562,23 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 if (tbMapSearch.Text != tbMapSearch.Suggestion)
                 {
                     if (!GameMode.Maps[i].Name.ToUpper().Contains(tbMapSearch.Text.ToUpper()))
+                    {
+                        skippedMapsCount++;
+                        continue;
+                    }
+                }
+
+                if (!ddplayerNumbers.SelectedItem.Text.Contains("-"))
+                {
+                    if (GameMode.Maps[i].MaxPlayers != int.Parse(ddplayerNumbers.SelectedItem.Text))
+                    {
+                        skippedMapsCount++;
+                        continue;
+                    }
+                }
+                if (!ddAuthor.SelectedItem.Text.Contains("-"))
+                {
+                    if (!GameMode.Maps[i].Author.Contains(ddAuthor.SelectedItem.Text))
                     {
                         skippedMapsCount++;
                         continue;
@@ -510,8 +639,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             if (Map == null)
                 return;
 
-            var messageBox = XNAMessageBox.ShowYesNoDialog(WindowManager, "Delete Confirmation",
-                "Are you sure you wish to delete the custom map \"" + Map.Name + "\"?");
+            var messageBox = XNAMessageBox.ShowYesNoDialog(WindowManager, "删除确认",
+                "你确认要删除非官方地图： \"" + Map.Name + "\"?");
             messageBox.YesClickedAction = DeleteSelectedMap;
         }
 
@@ -539,7 +668,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             catch (IOException ex)
             {
                 Logger.Log($"Deleting map {Map.BaseFilePath} failed! Message: {ex.Message}");
-                XNAMessageBox.Show(WindowManager, "Deleting Map Failed", "Deleting map failed! Reason: " + ex.Message);
+                XNAMessageBox.Show(WindowManager, "地图删除失败", "地图删除失败！原因：" + ex.Message);
             }
         }
 
@@ -571,6 +700,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             ChangeMap(GameMode, Map);
             tbMapSearch.Text = string.Empty;
             tbMapSearch.OnSelectedChanged();
+            
             ListMaps();
         }
 
@@ -645,9 +775,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                     locationY + (DROP_DOWN_HEIGHT + playerOptionVecticalMargin) * i,
                     playerNameWidth, DROP_DOWN_HEIGHT);
                 ddPlayerName.AddItem(String.Empty);
-                ddPlayerName.AddItem("Easy AI");
-                ddPlayerName.AddItem("Medium AI");
-                ddPlayerName.AddItem("Hard AI");
+                ddPlayerName.AddItem("简单的电脑");
+                ddPlayerName.AddItem("普通的电脑");
+                ddPlayerName.AddItem("冷酷的电脑");
                 ddPlayerName.AllowDropDown = true;
                 ddPlayerName.SelectedIndexChanged += CopyPlayerDataFromUI;
                 ddPlayerName.Tag = true;
@@ -657,7 +787,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 ddPlayerSide.ClientRectangle = new Rectangle(
                     ddPlayerName.Right + playerOptionHorizontalMargin,
                     ddPlayerName.Y, sideWidth, DROP_DOWN_HEIGHT);
-                ddPlayerSide.AddItem("Random", AssetLoader.LoadTexture("randomicon.png"));
+                ddPlayerSide.AddItem("随机", AssetLoader.LoadTexture("randomicon.png"));
                 foreach (string randomSelector in selectorNames)
                     ddPlayerSide.AddItem(randomSelector, AssetLoader.LoadTexture(randomSelector + "icon.png"));
                 foreach (string sideName in sides)
@@ -671,7 +801,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 ddPlayerColor.ClientRectangle = new Rectangle(
                     ddPlayerSide.Right + playerOptionHorizontalMargin,
                     ddPlayerName.Y, colorWidth, DROP_DOWN_HEIGHT);
-                ddPlayerColor.AddItem("Random", AssetLoader.GetColorFromString(randomColor));
+                ddPlayerColor.AddItem("随机", AssetLoader.GetColorFromString(randomColor));
                 foreach (MultiplayerColor mpColor in MPColors)
                     ddPlayerColor.AddItem(mpColor.Name, mpColor.XnaColor);
                 ddPlayerColor.AllowDropDown = false;
@@ -720,32 +850,32 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             lblName = new XNALabel(WindowManager);
             lblName.Name = "lblName";
-            lblName.Text = "PLAYER";
+            lblName.Text = "玩家";
             lblName.FontIndex = 1;
             lblName.ClientRectangle = new Rectangle(ddPlayerNames[0].X, playerOptionCaptionLocationY, 0, 0);
 
             lblSide = new XNALabel(WindowManager);
             lblSide.Name = "lblSide";
-            lblSide.Text = "SIDE";
+            lblSide.Text = "阵营";
             lblSide.FontIndex = 1;
             lblSide.ClientRectangle = new Rectangle(ddPlayerSides[0].X, playerOptionCaptionLocationY, 0, 0);
 
             lblColor = new XNALabel(WindowManager);
             lblColor.Name = "lblColor";
-            lblColor.Text = "COLOR";
+            lblColor.Text = "颜色";
             lblColor.FontIndex = 1;
             lblColor.ClientRectangle = new Rectangle(ddPlayerColors[0].X, playerOptionCaptionLocationY, 0, 0);
 
             lblStart = new XNALabel(WindowManager);
             lblStart.Name = "lblStart";
-            lblStart.Text = "START";
+            lblStart.Text = "开始";
             lblStart.FontIndex = 1;
             lblStart.ClientRectangle = new Rectangle(ddPlayerStarts[0].X, playerOptionCaptionLocationY, 0, 0);
             lblStart.Visible = false;
 
             lblTeam = new XNALabel(WindowManager);
             lblTeam.Name = "lblTeam";
-            lblTeam.Text = "TEAM";
+            lblTeam.Text = "小队";
             lblTeam.FontIndex = 1;
             lblTeam.ClientRectangle = new Rectangle(ddPlayerTeams[0].X, playerOptionCaptionLocationY, 0, 0);
 
@@ -756,6 +886,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             PlayerOptionsPanel.AddChild(lblTeam);
 
             CheckDisallowedSides();
+            
         }
 
         /// <summary>
@@ -818,7 +949,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         }
 
 #if YR
-        protected void CheckRa2Mode()
+        protected bool CheckRa2Mode()
         {
             // TODO obsolete, remove when it's certain that this is not needed anywhere
 
@@ -833,6 +964,10 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                     RA2Mode = false;
                 }
             }
+            if (RA2Mode == true)
+                return true;
+            else
+                return false;
         }
 #endif
 
@@ -1481,7 +1616,12 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             WriteMap(houseInfos);
 
             GameProcessLogic.GameProcessExited += GameProcessExited_Callback;
-
+            CreateRa2FileList();
+            CheckRa2Mode();
+            if (RA2Mode == true)
+                CopyRa2Files();
+            else
+                DeleteRa2Files();
             GameProcessLogic.StartGameProcess();
             UpdateDiscordPresence(true);
         }
@@ -1506,6 +1646,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             ClearReadyStatuses();
 
             CopyPlayerDataToUI();
+
+            DeleteRa2Files();
 
             if (ClientConfiguration.Instance.ProcessScreenshots)
             {
@@ -1625,6 +1767,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         protected virtual void CopyPlayerDataToUI()
         {
             PlayerUpdatingInProgress = true;
+            
 
             bool allowOptionsChange = AllowPlayerOptionsChange();
 
@@ -1638,8 +1781,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 XNADropDown ddPlayerName = ddPlayerNames[pId];
                 ddPlayerName.Items[0].Text = pInfo.Name;
                 ddPlayerName.Items[1].Text = string.Empty;
-                ddPlayerName.Items[2].Text = "Kick";
-                ddPlayerName.Items[3].Text = "Ban";
+                ddPlayerName.Items[2].Text = "踢";
+                ddPlayerName.Items[3].Text = "封";
                 ddPlayerName.SelectedIndex = 0;
                 ddPlayerName.AllowDropDown = false;
 
@@ -1673,9 +1816,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
                 XNADropDown ddPlayerName = ddPlayerNames[index];
                 ddPlayerName.Items[0].Text = "-";
-                ddPlayerName.Items[1].Text = "Easy AI";
-                ddPlayerName.Items[2].Text = "Medium AI";
-                ddPlayerName.Items[3].Text = "Hard AI";
+                ddPlayerName.Items[1].Text = "简单的电脑";
+                ddPlayerName.Items[2].Text = "普通的电脑";
+                ddPlayerName.Items[3].Text = "冷酷的电脑";
                 ddPlayerName.SelectedIndex = 3 - aiInfo.AILevel;
                 ddPlayerName.AllowDropDown = allowOptionsChange;
 
@@ -1703,9 +1846,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 XNADropDown ddPlayerName = ddPlayerNames[ddIndex];
                 ddPlayerName.AllowDropDown = false;
                 ddPlayerName.Items[0].Text = string.Empty;
-                ddPlayerName.Items[1].Text = "Easy AI";
-                ddPlayerName.Items[2].Text = "Medium AI";
-                ddPlayerName.Items[3].Text = "Hard AI";
+                ddPlayerName.Items[1].Text = "简单的电脑";
+                ddPlayerName.Items[2].Text = "普通的电脑";
+                ddPlayerName.Items[3].Text = "冷酷的电脑";
                 ddPlayerName.SelectedIndex = 0;
 
                 ddPlayerSides[ddIndex].SelectedIndex = -1;
@@ -1768,10 +1911,10 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             if (GameMode == null || Map == null)
             {
-                lblMapName.Text = "Map: Unknown";
-                lblMapAuthor.Text = "By Unknown Author";
-                lblGameMode.Text = "Game mode: Unknown";
-                lblMapSize.Text = "Size: Not available";
+                lblMapName.Text = "地图：未知";
+                lblMapAuthor.Text = "作者：未知";
+                lblGameMode.Text = "游戏模式：未知";
+                lblMapSize.Text = "地图大小：未知";
 
                 lblMapAuthor.X = MapPreviewBox.Right - lblMapAuthor.Width;
 
@@ -1780,10 +1923,10 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 return;
             }
 
-            lblMapName.Text = "Map: " + Renderer.GetSafeString(map.Name, lblMapName.FontIndex);
-            lblMapAuthor.Text = "By " + Renderer.GetSafeString(map.Author, lblMapAuthor.FontIndex);
-            lblGameMode.Text = "Game mode: " + gameMode.UIName;
-            lblMapSize.Text = "Size: " + map.GetSizeString();
+            lblMapName.Text = "地图：" + Renderer.GetSafeString(map.Name, lblMapName.FontIndex);
+            lblMapAuthor.Text = "作者：" + Renderer.GetSafeString(map.Author, lblMapAuthor.FontIndex);
+            lblGameMode.Text = "游戏模式：" + gameMode.UIName;
+            lblMapSize.Text = "地图大小：" + map.GetSizeString();
 
             lblMapAuthor.X = MapPreviewBox.Right - lblMapAuthor.Width;
 
@@ -1858,7 +2001,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
 
             // Check if AI players allowed
-            bool AIAllowed = !(Map.MultiplayerOnly || GameMode.MultiplayerOnly) || !(Map.HumanPlayersOnly || GameMode.HumanPlayersOnly);
+            bool AIAllowed = !(Map.MultiplayerOnly || GameMode.MultiplayerOnly) & !(Map.HumanPlayersOnly || GameMode.HumanPlayersOnly);
             foreach (var ddName in ddPlayerNames)
             {
                 if (ddName.Items.Count > 3)
@@ -1949,11 +2092,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             switch (aiLevel)
             {
                 case 0:
-                    return "Hard AI";
+                    return "冷酷的电脑";
                 case 1:
-                    return "Medium AI";
+                    return "普通的电脑";
                 case 2:
-                    return "Easy AI";
+                    return "简单的电脑";
             }
 
             return string.Empty;

@@ -118,12 +118,13 @@ namespace DTAClient.Domain.Multiplayer
                 StartingWaypoint = 90;
                 return false;
             }
+            
 
             if (pInfo.StartingLocation == 0)
             {
                 // Randomize starting location
 
-                if (!ClientConfiguration.Instance.UseClientRandomStartLocations)
+                if (!(ClientConfiguration.Instance.UseClientRandomStartLocations || map.UseClientRandomStartLocations))
                 {
 
                     // The game uses its own randomization logic that places

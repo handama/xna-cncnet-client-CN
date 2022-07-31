@@ -1,9 +1,11 @@
 ﻿using ClientCore;
 using ClientGUI;
 using Microsoft.Xna.Framework;
+using Rampastring.Tools;
 using Rampastring.XNAUI;
 using Rampastring.XNAUI.XNAControls;
 using System;
+using System.Collections.Generic;
 
 namespace DTAConfig.OptionPanels
 {
@@ -12,8 +14,88 @@ namespace DTAConfig.OptionPanels
         private const int TEXT_BACKGROUND_COLOR_TRANSPARENT = 0;
         private const int TEXT_BACKGROUND_COLOR_BLACK = 12;
         private const int MAX_SCROLL_RATE = 6;
+        private IniFile clientDefinitionsIni;
+        private string ExtraExeCommandLineParameters => clientDefinitionsIni.GetStringValue("Settings", "ExtraCommandLineParams", string.Empty);
 
-        public GameOptionsPanel(WindowManager windowManager, UserINISettings iniSettings, XNAControl topBar)
+        private List<string> essentialECLs = new List<string>() { "SPAWN", "CD", "LOG" };
+
+        private List<string> ExtraExeCommandLineTrimed(string eclText)
+        {
+
+            string[] ecls = eclText.Split('-');
+            List<string> configurableECLs = new List<string>();
+            int n = 1;
+            for (; n < ecls.Length;)
+            {
+                ecls[n] = ecls[n].Trim();
+                bool isEssentialECL = false;
+                foreach (string eecl in essentialECLs)
+                {
+                    if (String.Equals(eecl, ecls[n], StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        isEssentialECL = true;
+                    }
+                }
+                if (!isEssentialECL)
+                {
+                    configurableECLs.Add(ecls[n]);
+                }
+                n++;
+            }
+            return configurableECLs;
+        }
+        private void WriteExtraCommandLines(string ecls)
+        {
+            string clt = "";
+            foreach (string ecl in essentialECLs)
+            {
+                clt += "-" + ecl + " ";
+            }
+            string fullecls = clt + ecls;
+            clientDefinitionsIni.SetStringValue("Settings", "ExtraCommandLineParams", fullecls);
+            clientDefinitionsIni.WriteIniFile();
+        }
+        private bool CompareExtraCommandLines(string ecls)
+        {
+            bool isAllTheSame = true;
+            List<string> oldecls = ExtraExeCommandLineTrimed(ExtraExeCommandLineParameters);
+            oldecls.Sort();
+            List<string> newecls = ExtraExeCommandLineTrimed(ecls);
+            newecls.Sort();
+            string newecl = CommandLineText(ecls);
+            if (oldecls.Count != newecls.Count)
+            {
+                WriteExtraCommandLines(newecl);
+                isAllTheSame = false;
+            }
+            else
+            {
+                int i = 0;
+                for (;i< oldecls.Count;)
+                {
+                    if (!String.Equals(oldecls[i], newecls[i], StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        isAllTheSame = false;
+                    }
+                    i++;
+                }
+                if (!isAllTheSame) WriteExtraCommandLines(newecl);
+            }
+            return !isAllTheSame;
+        }
+
+        private string CommandLineText(string eclText)
+        {
+            string clt = "";
+            foreach (string ecl in ExtraExeCommandLineTrimed(eclText))
+            {
+                clt += "-" + ecl + " ";
+            }
+            return clt;
+        }
+
+
+    public GameOptionsPanel(WindowManager windowManager, UserINISettings iniSettings, XNAControl topBar)
             : base(windowManager, iniSettings)
         {
             this.topBar = topBar;
@@ -25,6 +107,8 @@ namespace DTAConfig.OptionPanels
         private XNAClientCheckBox chkTargetLines;
         private XNAClientCheckBox chkScrollCoasting;
         private XNAClientCheckBox chkTooltips;
+        private XNAClientCheckBox chkToolTipDescriptions;
+        private XNAClientCheckBox chkLoadRootFolderMaps;
 #if YR
         private XNAClientCheckBox chkShowHiddenObjects;
 #elif DTA || TS || TI
@@ -35,12 +119,14 @@ namespace DTAConfig.OptionPanels
         private XNAControl topBar;
 
         private XNATextBox tbPlayerName;
+        private XNATextBox tbCommandLine;
 
         private HotkeyConfigurationWindow hotkeyConfigWindow;
 
         public override void Initialize()
         {
             base.Initialize();
+            clientDefinitionsIni = new IniFile(ProgramConstants.GetBaseResourcePath() + "ClientDefinitions.ini");
 
             Name = "GameOptionsPanel";
 
@@ -48,7 +134,7 @@ namespace DTAConfig.OptionPanels
             lblScrollRate.Name = "lblScrollRate";
             lblScrollRate.ClientRectangle = new Rectangle(12,
                 14, 0, 0);
-            lblScrollRate.Text = "Scroll Rate:";
+            lblScrollRate.Text = "屏幕滚动速率：";
 
             lblScrollRateValue = new XNALabel(WindowManager);
             lblScrollRateValue.Name = "lblScrollRateValue";
@@ -75,22 +161,34 @@ namespace DTAConfig.OptionPanels
             chkScrollCoasting.ClientRectangle = new Rectangle(
                 lblScrollRate.X,
                 trbScrollRate.Bottom + 20, 0, 0);
-            chkScrollCoasting.Text = "Scroll Coasting";
+            chkScrollCoasting.Text = "惯性滚动";
 
             chkTargetLines = new XNAClientCheckBox(WindowManager);
             chkTargetLines.Name = "chkTargetLines";
             chkTargetLines.ClientRectangle = new Rectangle(
                 lblScrollRate.X,
                 chkScrollCoasting.Bottom + 24, 0, 0);
-            chkTargetLines.Text = "Target Lines";
+            chkTargetLines.Text = "显示目标线";
 
             chkTooltips = new XNAClientCheckBox(WindowManager);
             chkTooltips.Name = "chkTooltips";
-            chkTooltips.Text = "Tooltips";
+            chkTooltips.Text = "工具提示";
 
+            chkToolTipDescriptions = new XNAClientCheckBox(WindowManager);
+            chkToolTipDescriptions.Name = "chkToolTipDescriptions";
+            chkToolTipDescriptions.Text = "单位信息提示";
+
+            chkLoadRootFolderMaps = new XNAClientCheckBox(WindowManager);
+            chkLoadRootFolderMaps.Name = "chkLoadRootFolderMaps";
+            chkLoadRootFolderMaps.Text = "加载根目录地图";
+            
             var lblPlayerName = new XNALabel(WindowManager);
             lblPlayerName.Name = "lblPlayerName";
-            lblPlayerName.Text = "Player Name*:";
+            lblPlayerName.Text = "玩家名称*:";
+
+            var lblCommandLine = new XNALabel(WindowManager);
+            lblCommandLine.Name = "lblCommandLine";
+            lblCommandLine.Text = "附加命令行参数:";
 
 #if YR
             chkShowHiddenObjects = new XNAClientCheckBox(WindowManager);
@@ -98,15 +196,23 @@ namespace DTAConfig.OptionPanels
             chkShowHiddenObjects.ClientRectangle = new Rectangle(
                 lblScrollRate.X,
                 chkTargetLines.Bottom + 24, 0, 0);
-            chkShowHiddenObjects.Text = "Show Hidden Objects";
+            chkShowHiddenObjects.Text = "显示被遮挡物品";
 
             chkTooltips.ClientRectangle = new Rectangle(
                 lblScrollRate.X,
                 chkShowHiddenObjects.Bottom + 24, 0, 0);
 
+            chkLoadRootFolderMaps.ClientRectangle = new Rectangle(
+            lblScrollRate.X,
+            chkTooltips.Bottom + 24, 0, 0);
+
             lblPlayerName.ClientRectangle = new Rectangle(
                 lblScrollRate.X,
-                chkTooltips.Bottom + 30, 0, 0);
+                chkLoadRootFolderMaps.Bottom + 30, 0, 0);
+
+            chkToolTipDescriptions.ClientRectangle = new Rectangle(
+            lblScrollRate.X + 260,
+            trbScrollRate.Bottom + 24, 0, 0);
 
             AddChild(chkShowHiddenObjects);
 #else
@@ -155,8 +261,19 @@ namespace DTAConfig.OptionPanels
             lblNotice.Name = "lblNotice";
             lblNotice.ClientRectangle = new Rectangle(lblPlayerName.X,
                 lblPlayerName.Bottom + 30, 0, 0);
-            lblNotice.Text = "* If you are currently connected to CnCNet, you need to log out and reconnect" +
-                Environment.NewLine + "for your new name to be applied.";
+            lblNotice.Text = "* 如果你已连接到CnCNet，需要重新登录才能使新名称生效。";
+
+            lblCommandLine.ClientRectangle = new Rectangle(
+            lblScrollRate.X,
+            lblNotice.Bottom + 12, 0, 0);
+
+            tbCommandLine = new XNATextBox(WindowManager);
+            tbCommandLine.Name = "tbCommandLine";
+            tbCommandLine.MaximumTextLength = 99;
+            tbCommandLine.ClientRectangle = new Rectangle(trbScrollRate.X,
+                lblCommandLine.Y - 2, 200, 19);
+
+            tbCommandLine.Text = CommandLineText(ExtraExeCommandLineParameters);
 
             hotkeyConfigWindow = new HotkeyConfigurationWindow(WindowManager);
             DarkeningPanel.AddAndInitializeWithControl(WindowManager, hotkeyConfigWindow);
@@ -164,8 +281,8 @@ namespace DTAConfig.OptionPanels
 
             var btnConfigureHotkeys = new XNAClientButton(WindowManager);
             btnConfigureHotkeys.Name = "btnConfigureHotkeys";
-            btnConfigureHotkeys.ClientRectangle = new Rectangle(lblPlayerName.X, lblNotice.Bottom + 36, 160, 23);
-            btnConfigureHotkeys.Text = "Configure Hotkeys";
+            btnConfigureHotkeys.ClientRectangle = new Rectangle(lblCommandLine.X, lblNotice.Bottom + 36, 160, 23);
+            btnConfigureHotkeys.Text = "编辑热键";
             btnConfigureHotkeys.LeftClick += BtnConfigureHotkeys_LeftClick;
 
             AddChild(lblScrollRate);
@@ -174,7 +291,11 @@ namespace DTAConfig.OptionPanels
             AddChild(chkScrollCoasting);
             AddChild(chkTargetLines);
             AddChild(chkTooltips);
+            AddChild(chkToolTipDescriptions);
+            AddChild(chkLoadRootFolderMaps);
             AddChild(lblPlayerName);
+            AddChild(lblCommandLine);
+            AddChild(tbCommandLine);
             AddChild(tbPlayerName);
             AddChild(lblNotice);
             AddChild(btnConfigureHotkeys);
@@ -217,6 +338,8 @@ namespace DTAConfig.OptionPanels
             chkScrollCoasting.Checked = !Convert.ToBoolean(IniSettings.ScrollCoasting);
             chkTargetLines.Checked = IniSettings.TargetLines;
             chkTooltips.Checked = IniSettings.Tooltips;
+            chkToolTipDescriptions.Checked = IniSettings.ToolTipDescriptions;
+            chkLoadRootFolderMaps.Checked = IniSettings.LoadRootFolderMaps;
 #if YR
             chkShowHiddenObjects.Checked = IniSettings.ShowHiddenObjects;
 #endif
@@ -226,17 +349,25 @@ namespace DTAConfig.OptionPanels
             chkBlackChatBackground.Checked = IniSettings.TextBackgroundColor == TEXT_BACKGROUND_COLOR_BLACK;
 #endif
             tbPlayerName.Text = UserINISettings.Instance.PlayerName;
+            tbCommandLine.Text = CommandLineText(ExtraExeCommandLineParameters);
         }
 
         public override bool Save()
         {
             base.Save();
+            bool restartRequired = false;
 
             IniSettings.ScrollRate.Value = ReverseScrollRate(trbScrollRate.Value);
 
             IniSettings.ScrollCoasting.Value = Convert.ToInt32(!chkScrollCoasting.Checked);
             IniSettings.TargetLines.Value = chkTargetLines.Checked;
             IniSettings.Tooltips.Value = chkTooltips.Checked;
+
+            IniSettings.ToolTipDescriptions.Value = chkToolTipDescriptions.Checked;
+
+            if (IniSettings.LoadRootFolderMaps.Value != chkLoadRootFolderMaps.Checked)
+                restartRequired = true;
+            IniSettings.LoadRootFolderMaps.Value = chkLoadRootFolderMaps.Checked;
 #if YR
             IniSettings.ShowHiddenObjects.Value = chkShowHiddenObjects.Checked;
 #endif
@@ -257,7 +388,8 @@ namespace DTAConfig.OptionPanels
             if (playerName.Length > 0)
                 IniSettings.PlayerName.Value = tbPlayerName.Text;
 
-            return false;
+            restartRequired = restartRequired || CompareExtraCommandLines(tbCommandLine.Text);
+            return restartRequired;
         }
 
         private int ReverseScrollRate(int scrollRate)

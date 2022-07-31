@@ -46,7 +46,7 @@ namespace DTAClient.DXGUI
             window.ClientRectangle = new Rectangle(0, 0, 200, 100);
 
             XNALabel explanation = new XNALabel(WindowManager);
-            explanation.Text = "A game is in progress.";
+            explanation.Text = "游戏进行中";
 
             AddChild(window);
 

@@ -36,11 +36,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             //InitPlayerOptionDropdowns(128, 98, 90, 48, 55, new Point(6, 24));
             InitPlayerOptionDropdowns();
 
-            btnLeaveGame.Text = "Main Menu";
+            btnLeaveGame.Text = "主菜单";
 
             //MapPreviewBox.EnableContextMenu = true;
 
-            ddPlayerSides[0].AddItem("Spectator", AssetLoader.LoadTexture("spectatoricon.png"));
+            ddPlayerSides[0].AddItem("观察者", AssetLoader.LoadTexture("spectatoricon.png"));
 
             MapPreviewBox.LocalStartingLocationSelected += MapPreviewBox_LocalStartingLocationSelected;
             MapPreviewBox.StartingLocationApplied += MapPreviewBox_StartingLocationApplied;
@@ -92,24 +92,24 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             if (GameMode.MultiplayerOnly)
             {
-                return GameMode.UIName + " can only be played on CnCNet and LAN.";
+                return GameMode.UIName + "只能在CnCNet或局域网上游玩";
             }
 
             if (Map.MultiplayerOnly)
             {
-                return "The selected map can only be played on CnCNet and LAN.";
+                return "这张地图只能在CnCNet或局域网上游玩";
             }
 
             if (totalPlayerCount < Map.MinPlayers)
             {
-                return "The selected map cannot be played with less than " + Map.MinPlayers + " players.";
+                return "这张图最低要求有" + Map.MinPlayers + "位玩家。";
             }
 
             if (Map.EnforceMaxPlayers)
             {
                 if (totalPlayerCount > Map.MaxPlayers)
                 {
-                    return "The selected map cannot be played with more than " + Map.MaxPlayers + " players.";
+                    return "这张图最多只能有" + Map.MaxPlayers + "位玩家。";
                 }
 
                 IEnumerable<PlayerInfo> concatList = Players.Concat(AIPlayers);
@@ -121,14 +121,14 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
                     if (concatList.Count(p => p.StartingLocation == pInfo.StartingLocation) > 1)
                     {
-                        return "Multiple players cannot share the same starting location on the selected map.";
+                        return "玩家不能占据相同的起始位置。";
                     }
                 }
             }
 
             if (Map.IsCoop && Players[0].SideId == ddPlayerSides[0].Items.Count - 1)
             {
-                return "Co-op missions cannot be spectated. You'll have to show a bit more effort to cheat here.";
+                return "合作任务不能观察。只要你不停下来，作弊之路就会不断延伸...";
             }
 
             return null;
@@ -145,7 +145,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 return;
             }
 
-            XNAMessageBox.Show(WindowManager, "Cannot launch game", error);
+            XNAMessageBox.Show(WindowManager, "不能开启游戏", error);
         }
 
         protected override void BtnLeaveGame_LeftClick(object sender, EventArgs e)
@@ -218,7 +218,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         public string GetSwitchName()
         {
-            return "Skirmish Lobby";
+            return "遭遇战房间";
         }
 
         /// <summary>
@@ -326,7 +326,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 //return;
             }
 
-            bool AIAllowed = !(Map.MultiplayerOnly || GameMode.MultiplayerOnly) || !(Map.HumanPlayersOnly || GameMode.HumanPlayersOnly);
+            bool AIAllowed = !(Map.MultiplayerOnly || GameMode.MultiplayerOnly) & !(Map.HumanPlayersOnly || GameMode.HumanPlayersOnly);
             foreach (string key in keys)
             {
                 if (!AIAllowed) break;

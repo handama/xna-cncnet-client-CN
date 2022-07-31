@@ -9,6 +9,7 @@ using Rampastring.XNAUI;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Collections.Generic;
+using Localization;
 
 namespace DTAClient
 {
@@ -32,6 +33,7 @@ namespace DTAClient
 
     static class PreStartup
     {
+
         /// <summary>
         /// Initializes various basic systems like the client's logger, 
         /// constants, and the general exception handler.
@@ -42,6 +44,7 @@ namespace DTAClient
         /// <param name="parameters">The client's startup parameters.</param>
         public static void Initialize(StartupParams parameters)
         {
+
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(HandleExcept);
 
             Environment.CurrentDirectory = MainClientConstants.gamepath;
@@ -73,6 +76,45 @@ namespace DTAClient
             Logger.Log("Loading settings.");
 
             UserINISettings.Initialize(ClientConfiguration.Instance.SettingsIniName);
+
+            // Try to load translations
+            try
+            {
+                var translation = TranslationTable.LoadFromIniFile(ClientConfiguration.Instance.TranslationIniName);
+                TranslationTable.Instance = translation;
+                Logger.Log("Load translation: " + translation.LanguageName);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed to load the translation file. " + ex.Message);
+                TranslationTable.Instance = new TranslationTable();
+            }
+
+            try
+            {
+                if (ClientConfiguration.Instance.GenerateTranslationStub)
+                {
+                    string stubPath = "Client/Translation.stub.ini";
+                    var stubTable = TranslationTable.Instance.Clone();
+                    TranslationTable.Instance.MissingTranslationEvent += (sender, e) =>
+                    {
+                        stubTable.Table.Add(e.Label, e.DefaultValue);
+                    };
+
+                    AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+                    {
+                        Logger.Log("Writing the translation stub file.");
+                        var ini = stubTable.SaveIni();
+                        ini.WriteIniFile(stubPath);
+                    };
+
+                    Logger.Log("Generating translation stub feature is now enabled. The stub file will be written when the client exits.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed to generate the translation stub. " + ex.Message);
+            }
 
             // Delete obsolete files from old target project versions
 

@@ -157,7 +157,7 @@ namespace DTAClient.Domain.Multiplayer.CnCNet
                     if (tunnel.Version != SUPPORTED_TUNNEL_VERSION)
                         continue;
 
-                    if (tunnel.Official || tunnel.Recommended)
+                    if (tunnel.Official || tunnel.Recommended || tunnel.isCNServer) //
                     {
                         Ping p = new Ping();
                         try

@@ -29,10 +29,10 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             Height = 200;
             PanelBackgroundDrawMode = PanelBackgroundImageDrawMode.STRETCHED;
             BackgroundTexture = AssetLoader.CreateTexture(new Color(0, 0, 0, 128), 1, 1);
-            AddColumn("Name", 230);
-            AddColumn("Official", 70);
-            AddColumn("Ping", 76);
-            AddColumn("Players", 90);
+            AddColumn("名称", 230);
+            AddColumn("官方", 70);
+            AddColumn("延迟", 76);
+            AddColumn("玩家数", 90);
             AllowRightClickUnselect = false;
             AllowKeyboardInput = true;
         }
@@ -76,14 +76,14 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 info.Add(tunnel.Name);
                 info.Add(Conversions.BooleanToString(tunnel.Official, BooleanStringStyle.YESNO));
                 if (tunnel.PingInMs == -1)
-                    info.Add("Unknown");
+                    info.Add("未知");
                 else
                     info.Add(tunnel.PingInMs + " ms");
                 info.Add(tunnel.Clients + " / " + tunnel.MaxClients);
 
                 AddItem(info, true);
 
-                if ((tunnel.Official || tunnel.Recommended) && tunnel.PingInMs > -1)
+                if ((tunnel.Official || tunnel.Recommended || tunnel.CNServer) && tunnel.PingInMs > -1)
                 {
                     int rating = GetTunnelRating(tunnel);
                     if (rating < lowestTunnelRating)
@@ -126,7 +126,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             CnCNetTunnel tunnel = tunnelHandler.Tunnels[tunnelIndex];
 
             if (tunnel.PingInMs == -1)
-                lbItem.Text = "Unknown";
+                lbItem.Text = "未知";
             else
             {
                 lbItem.Text = tunnel.PingInMs + " ms";
@@ -135,7 +135,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 if (isManuallySelectedTunnel)
                     return;
 
-                if ((tunnel.Recommended || tunnel.Official) && rating < lowestTunnelRating)
+                if ((tunnel.Recommended || tunnel.Official || tunnel.CNServer) && rating < lowestTunnelRating)
                 {
                     bestTunnelIndex = tunnelIndex;
                     lowestTunnelRating = rating;

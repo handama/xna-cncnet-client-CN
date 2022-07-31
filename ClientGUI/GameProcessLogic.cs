@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using ClientCore;
 using Rampastring.Tools;
+using System.Collections.Generic;
 
 namespace ClientGUI
 {
@@ -18,12 +19,19 @@ namespace ClientGUI
 
         public static event Action GameProcessExited;
 
+        public static string PhobosVersion;
+        public static bool PhobosECLNeeded = false;
+        public static string PhobosECLP = "";
+
+
         public static bool UseQres { get; set; }
         public static bool SingleCoreAffinity { get; set; }
 
         /// <summary>
         /// Starts the main game process.
         /// </summary>
+        /// 
+
         public static void StartGameProcess()
         {
             Logger.Log("About to launch main game executable.");
@@ -46,8 +54,20 @@ namespace ClientGUI
                     additionalExecutableName = "\"" + ClientConfiguration.Instance.GetGameExecutableName() + "\" ";
                 }
             }
+            if (File.Exists(ProgramConstants.PhobosPath))
+            {
+                FileVersionInfo phobosinfo = FileVersionInfo.GetVersionInfo(ProgramConstants.PhobosPath);
+                Logger.Log("Phobos is detected, version: " + phobosinfo.FileVersion + ".");
+                if (phobosinfo.FileVersion.Contains(ProgramConstants.PhobosDevBuildPrefix)) PhobosECLNeeded = true;
+                if (PhobosECLNeeded)
+                {
+                    PhobosVersion = phobosinfo.FileVersion.Replace(ProgramConstants.PhobosDevBuildPrefix, "");
+                    Logger.Log("Phobos is dev version, adding extra command line parameter for the main executive.");
+                    PhobosECLP = " " + ProgramConstants.PhobosPrefix + PhobosVersion;
+                }
 
-            string extraCommandLine = ClientConfiguration.Instance.ExtraExeCommandLineParameters;
+            }
+            string extraCommandLine = ClientConfiguration.Instance.ExtraExeCommandLineParameters + PhobosECLP;
 
             File.Delete(ProgramConstants.GamePath + "DTA.LOG");
             File.Delete(ProgramConstants.GamePath + "TI.LOG");
@@ -93,7 +113,7 @@ namespace ClientGUI
                 DtaProcess.StartInfo.FileName = gameExecutableName;
                 DtaProcess.StartInfo.UseShellExecute = false;
                 if (!string.IsNullOrEmpty(extraCommandLine))
-                    DtaProcess.StartInfo.Arguments = " " + additionalExecutableName + "-SPAWN " + extraCommandLine;
+                    DtaProcess.StartInfo.Arguments = " " + additionalExecutableName + extraCommandLine;
                 else
                     DtaProcess.StartInfo.Arguments = additionalExecutableName + "-SPAWN";
                 DtaProcess.EnableRaisingEvents = true;

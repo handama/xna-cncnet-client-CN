@@ -1,6 +1,7 @@
 using System;
 using Rampastring.Tools;
 using System.IO;
+using System.Diagnostics;
 
 namespace ClientCore
 {
@@ -13,12 +14,15 @@ namespace ClientCore
         private const string CLIENT_SETTINGS = "DTACnCNetClient.ini";
         private const string GAME_OPTIONS = "GameOptions.ini";
         private const string CLIENT_DEFS = "ClientDefinitions.ini";
+       
+
 
         private static ClientConfiguration _instance;
 
         private IniFile gameOptions_ini;
         private IniFile DTACnCNetClient_ini;
         private IniFile clientDefinitionsIni;
+
 
         protected ClientConfiguration()
         {
@@ -28,6 +32,7 @@ namespace ClientCore
             clientDefinitionsIni = new IniFile(ProgramConstants.GetBaseResourcePath() + CLIENT_DEFS);
 
             DTACnCNetClient_ini = new IniFile(ProgramConstants.GetResourcePath() + CLIENT_SETTINGS);
+
 
             gameOptions_ini = new IniFile(ProgramConstants.GetBaseResourcePath() + GAME_OPTIONS);
         }
@@ -139,6 +144,9 @@ namespace ClientCore
 
         public string LocalGame => clientDefinitionsIni.GetStringValue(SETTINGS, "LocalGame", "DTA");
 
+        public string LoadMapGame => clientDefinitionsIni.GetStringValue(SETTINGS, "LoadMapGame", "YR");
+        
+
         public bool SidebarHack => clientDefinitionsIni.GetBooleanValue(SETTINGS, "SidebarHack", false);
 
         public int MinimumRenderWidth => clientDefinitionsIni.GetIntValue(SETTINGS, "MinimumRenderWidth", 1280);
@@ -207,6 +215,10 @@ namespace ClientCore
         }
 
         public string SettingsIniName => clientDefinitionsIni.GetStringValue(SETTINGS, "SettingsFile", "Settings.ini");
+        public string TranslationIniName => clientDefinitionsIni.GetStringValue(SETTINGS, "TranslationFile", "Resources/Translation.ini");
+
+        public bool GenerateTranslationStub => clientDefinitionsIni.GetBooleanValue(SETTINGS, "GenerateTranslationStub", false);
+
 
         public string ExtraExeCommandLineParameters => clientDefinitionsIni.GetStringValue(SETTINGS, "ExtraCommandLineParams", string.Empty);
 
@@ -225,6 +237,8 @@ namespace ClientCore
         public bool CopyMissionsToSpawnmapINI => clientDefinitionsIni.GetBooleanValue(SETTINGS, "CopyMissionsToSpawnmapINI", true);
 
         public string AllowedCustomGameModes => clientDefinitionsIni.GetStringValue(SETTINGS, "AllowedCustomGameModes", "Standard,Custom Map");
+
+        public string CustomMapFolderName => clientDefinitionsIni.GetStringValue(SETTINGS, "CustomMapFolderName", "Custom");
 
         public string GetGameExecutableName()
         {

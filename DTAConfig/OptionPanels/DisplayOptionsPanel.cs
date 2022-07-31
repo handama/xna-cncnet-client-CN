@@ -63,13 +63,13 @@ namespace DTAConfig.OptionPanels
             var lblIngameResolution = new XNALabel(WindowManager);
             lblIngameResolution.Name = "lblIngameResolution";
             lblIngameResolution.ClientRectangle = new Rectangle(12, 14, 0, 0);
-            lblIngameResolution.Text = "In-game Resolution:";
+            lblIngameResolution.Text = "游戏分辨率：";
 
             ddIngameResolution = new XNAClientDropDown(WindowManager);
             ddIngameResolution.Name = "ddIngameResolution";
             ddIngameResolution.ClientRectangle = new Rectangle(
-                lblIngameResolution.Right + 12,
-                lblIngameResolution.Y - 2, 120, 19);
+                lblIngameResolution.Right + 3,
+                lblIngameResolution.Y - 2, 158, 19);
 
             var clientConfig = ClientConfiguration.Instance;
 
@@ -86,7 +86,7 @@ namespace DTAConfig.OptionPanels
             lblDetailLevel.Name = "lblDetailLevel";
             lblDetailLevel.ClientRectangle = new Rectangle(lblIngameResolution.X,
                 ddIngameResolution.Bottom + 16, 0, 0);
-            lblDetailLevel.Text = "Detail Level:";
+            lblDetailLevel.Text = "清晰度：";
 
             ddDetailLevel = new XNAClientDropDown(WindowManager);
             ddDetailLevel.Name = "ddDetailLevel";
@@ -95,15 +95,15 @@ namespace DTAConfig.OptionPanels
                 lblDetailLevel.Y - 2,
                 ddIngameResolution.Width, 
                 ddIngameResolution.Height);
-            ddDetailLevel.AddItem("Low");
-            ddDetailLevel.AddItem("Medium");
-            ddDetailLevel.AddItem("High");
+            ddDetailLevel.AddItem("低");
+            ddDetailLevel.AddItem("中");
+            ddDetailLevel.AddItem("高");
 
             var  lblRenderer = new XNALabel(WindowManager);
             lblRenderer.Name = "lblRenderer";
             lblRenderer.ClientRectangle = new Rectangle(lblDetailLevel.X,
                 ddDetailLevel.Bottom + 16, 0, 0);
-            lblRenderer.Text = "Renderer:";
+            lblRenderer.Text = "渲染器：";
 
             ddRenderer = new XNAClientDropDown(WindowManager);
             ddRenderer.Name = "ddRenderer";
@@ -129,6 +129,7 @@ namespace DTAConfig.OptionPanels
                 }
             }
 
+            ddRenderer.SelectedIndexChanged += ddRenderer_SelectedIndexChanged;
             //ddRenderer.AddItem("Default");
             //ddRenderer.AddItem("IE-DDRAW");
             //ddRenderer.AddItem("TS-DDRAW");
@@ -141,7 +142,7 @@ namespace DTAConfig.OptionPanels
             chkWindowedMode.Name = "chkWindowedMode";
             chkWindowedMode.ClientRectangle = new Rectangle(lblDetailLevel.X,
                 ddRenderer.Bottom + 16, 0, 0);
-            chkWindowedMode.Text = "Windowed Mode";
+            chkWindowedMode.Text = "窗口化";
             chkWindowedMode.CheckedChanged += ChkWindowedMode_CheckedChanged;
 
             chkBorderlessWindowedMode = new XNAClientCheckBox(WindowManager);
@@ -149,7 +150,7 @@ namespace DTAConfig.OptionPanels
             chkBorderlessWindowedMode.ClientRectangle = new Rectangle(
                 chkWindowedMode.X + 50,
                 chkWindowedMode.Bottom + 24, 0, 0);
-            chkBorderlessWindowedMode.Text = "Borderless Windowed Mode";
+            chkBorderlessWindowedMode.Text = "无边框窗口化";
             chkBorderlessWindowedMode.AllowChecking = false;
 
             chkBackBufferInVRAM = new XNAClientCheckBox(WindowManager);
@@ -157,24 +158,24 @@ namespace DTAConfig.OptionPanels
             chkBackBufferInVRAM.ClientRectangle = new Rectangle(
                 lblDetailLevel.X,
                 chkBorderlessWindowedMode.Bottom + 28, 0, 0);
-            chkBackBufferInVRAM.Text = "Back Buffer in Video Memory" + Environment.NewLine +
-                "(lower performance, but is" + Environment.NewLine + "necessary on some systems)";
+            chkBackBufferInVRAM.Text = "视频的后缓冲区" + Environment.NewLine +
+                "(会降低性能，但老系统上可能需要)";
 
             var lblClientResolution = new XNALabel(WindowManager);
             lblClientResolution.Name = "lblClientResolution";
             lblClientResolution.ClientRectangle = new Rectangle(
                 285, 14, 0, 0);
-            lblClientResolution.Text = "Client Resolution:";
+            lblClientResolution.Text = "客户端分辨率：";
 
             ddClientResolution = new XNAClientPreferredItemDropDown(WindowManager);
             ddClientResolution.Name = "ddClientResolution";
             ddClientResolution.ClientRectangle = new Rectangle(
-                lblClientResolution.Right + 12,
+                lblClientResolution.Right + 3,
                 lblClientResolution.Y - 2,
                 Width - (lblClientResolution.Right + 24),
                 ddIngameResolution.Height);
             ddClientResolution.AllowDropDown = false;
-            ddClientResolution.PreferredItemLabel = "(recommended)";
+            ddClientResolution.PreferredItemLabel = "(推荐)";
 
             var screenBounds = Screen.PrimaryScreen.Bounds;
 
@@ -216,7 +217,7 @@ namespace DTAConfig.OptionPanels
             chkBorderlessClient.ClientRectangle = new Rectangle(
                 lblClientResolution.X,
                 lblDetailLevel.Y, 0, 0);
-            chkBorderlessClient.Text = "Fullscreen Client";
+            chkBorderlessClient.Text = "客户端全屏";
             chkBorderlessClient.CheckedChanged += ChkBorderlessMenu_CheckedChanged;
             chkBorderlessClient.Checked = true;
 
@@ -225,7 +226,7 @@ namespace DTAConfig.OptionPanels
             lblClientTheme.ClientRectangle = new Rectangle(
                 lblClientResolution.X,
                 lblRenderer.Y, 0, 0);
-            lblClientTheme.Text = "Client Theme:";
+            lblClientTheme.Text = "客户端主题：";
 
             ddClientTheme = new XNAClientDropDown(WindowManager);
             ddClientTheme.Name = "ddClientTheme";
@@ -244,7 +245,7 @@ namespace DTAConfig.OptionPanels
             lblCompatibilityFixes = new XNALabel(WindowManager);
             lblCompatibilityFixes.Name = "lblCompatibilityFixes";
             lblCompatibilityFixes.FontIndex = 1;
-            lblCompatibilityFixes.Text = "Compatibility Fixes (advanced):";
+            lblCompatibilityFixes.Text = "兼容性修复(高级):";
             AddChild(lblCompatibilityFixes);
             lblCompatibilityFixes.CenterOnParent();
             lblCompatibilityFixes.Y = Height - 103;
@@ -323,42 +324,47 @@ namespace DTAConfig.OptionPanels
                 resolutions.Add(new ScreenResolution(width, height));
             }
         }
-
+            
 		private void GetRenderers()
 		{
-			renderers = new List<DirectDrawWrapper>();
+            var RendererTypes = new List<string>();
+            renderers = new List<DirectDrawWrapper>();
 
 			var renderersIni = new IniFile(ProgramConstants.GetBaseResourcePath() + RENDERERS_INI);
 
 			var keys = renderersIni.GetSectionKeys("Renderers");
 			if (keys == null)
-				throw new Exception("[Renderers] not found from Renderers.ini!");
+				throw new Exception("在Renderers.ini中没有找到[Renderers]！");
 
+            
 			foreach (string key in keys)
 			{
 				string internalName = renderersIni.GetStringValue("Renderers", key, string.Empty);
 
 				var ddWrapper = new DirectDrawWrapper(internalName, renderersIni);
 				renderers.Add(ddWrapper);
-			}
+                RendererTypes.Add(internalName);
+            }
 
-			OSVersion osVersion = ClientConfiguration.Instance.GetOperatingSystemVersion();
+
+            OSVersion osVersion = ClientConfiguration.Instance.GetOperatingSystemVersion();
 
 			defaultRenderer = renderersIni.GetStringValue("DefaultRenderer", osVersion.ToString(), string.Empty);
 
 			if (defaultRenderer == null)
-				throw new Exception("Invalid or missing default renderer for operating system: " + osVersion);
+				throw new Exception("操作系统的默认渲染程序无效或丢失：" + osVersion);
 
 
 			string renderer = UserINISettings.Instance.Renderer;
 
 			selectedRenderer = renderers.Find(r => r.InternalName == renderer);
 
-			if (selectedRenderer == null)
+
+            if (selectedRenderer == null)
 				selectedRenderer = renderers.Find(r => r.InternalName == defaultRenderer);
 
 			if (selectedRenderer == null)
-				throw new Exception("Missing renderer: " + renderer);
+				throw new Exception("缺少渲染程序：" + renderer);
 
             GameProcessLogic.UseQres = selectedRenderer.UseQres;
             GameProcessLogic.SingleCoreAffinity = selectedRenderer.SingleCoreAffinity;
@@ -561,7 +567,7 @@ namespace DTAConfig.OptionPanels
         }
 
         private void ChkWindowedMode_CheckedChanged(object sender, EventArgs e)
-        {
+        {             
             if (chkWindowedMode.Checked)
             {
                 chkBorderlessWindowedMode.AllowChecking = true;
@@ -570,6 +576,25 @@ namespace DTAConfig.OptionPanels
 
             chkBorderlessWindowedMode.AllowChecking = false;
             chkBorderlessWindowedMode.Checked = false;
+
+        }
+        private void ddRenderer_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ddRenderer.SelectedItem.Text.IndexOf("CNC-DDraw(") != -1)
+            {
+                chkWindowedMode.AllowChecking = false;
+                chkWindowedMode.Checked = false;
+                //Logger.Log("chkWindowedMode disabled.");
+                return;
+            }
+            else
+            {
+                chkWindowedMode.AllowChecking = true;
+                chkWindowedMode.Checked = false;
+                //Logger.Log("chkWindowedMode enabled.");
+                return;
+            }
+
         }
 
         /// <summary>

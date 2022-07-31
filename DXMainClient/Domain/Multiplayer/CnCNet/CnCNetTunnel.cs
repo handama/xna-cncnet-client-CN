@@ -45,6 +45,7 @@ namespace DTAClient.Domain.Multiplayer.CnCNet
                 tunnel.Official = status == 2;
                 if (!tunnel.Official)
                     tunnel.Recommended = status == 1;
+                if (tunnel.Name.IndexOf("CN") != -1) { tunnel.CNServer = status == 3; tunnel.isCNServer = true; }
 
                 CultureInfo cultureInfo = CultureInfo.InvariantCulture;
 
@@ -78,6 +79,8 @@ namespace DTAClient.Domain.Multiplayer.CnCNet
         public int MaxClients { get; private set; }
         public bool Official { get; private set; }
         public bool Recommended { get; private set; }
+        public bool CNServer { get; private set; }
+        public bool isCNServer { get; private set; }
         public double Latitude { get; private set; }
         public double Longitude { get; private set; }
         public int Version { get; private set; }

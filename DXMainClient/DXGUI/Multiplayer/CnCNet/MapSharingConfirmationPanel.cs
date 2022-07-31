@@ -18,17 +18,17 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
         {
         }
 
-        private readonly string MapSharingRequestText = 
-            "The game host has selected a map that" + Environment.NewLine +
-            "doens't exist on your local installation.";
+        private readonly string MapSharingRequestText =
+            "房主选择了一张" + Environment.NewLine +
+            "你没有的地图。";
 
         private readonly string MapSharingDownloadText =
-            "Downloading map...";
+            "下载地图中...";
 
         private readonly string MapSharingFailedText =
-            "Downloading map failed. The game host" + Environment.NewLine +
-            "needs to change the map or you will be" + Environment.NewLine +
-            "unable to participate in the match.";
+            "地图下载失败。房主" + Environment.NewLine +
+            "需要更换地图，或者" + Environment.NewLine +
+            "你需要退出这场比赛。";
 
         public event EventHandler MapDownloadConfirmed;
 
@@ -40,7 +40,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             PanelBackgroundDrawMode = PanelBackgroundImageDrawMode.TILED;
 
             Name = nameof(MapSharingConfirmationPanel);
-            BackgroundTexture = AssetLoader.LoadTexture("msgboxform.png");
+            BackgroundTexture = AssetLoader.LoadTexture("MapConfirmation.png");
 
             lblDescription = new XNALabel(WindowManager);
             lblDescription.Name = nameof(lblDescription);
@@ -49,18 +49,18 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             lblDescription.Text = MapSharingRequestText;
             AddChild(lblDescription);
 
-            Width = lblDescription.Right + UIDesignConstants.EMPTY_SPACE_SIDES;
+            Width = 150;//(lblDescription.Right + UIDesignConstants.EMPTY_SPACE_SIDES) * 2;
 
             btnDownload = new XNAClientButton(WindowManager);
             btnDownload.Name = nameof(btnDownload);
             btnDownload.Width = UIDesignConstants.BUTTON_WIDTH_92;
-            btnDownload.Y = lblDescription.Bottom + UIDesignConstants.EMPTY_SPACE_TOP * 2;
-            btnDownload.Text = "Download";
+            btnDownload.Y = 85;//lblDescription.Bottom + UIDesignConstants.EMPTY_SPACE_TOP * 4;
+            btnDownload.Text = "下载";
             btnDownload.LeftClick += (s, e) => MapDownloadConfirmed?.Invoke(this, EventArgs.Empty);
             AddChild(btnDownload);
             btnDownload.CenterOnParentHorizontally();
 
-            Height = btnDownload.Bottom + UIDesignConstants.EMPTY_SPACE_BOTTOM;
+            Height = 120;//(btnDownload.Bottom + UIDesignConstants.EMPTY_SPACE_BOTTOM) * 2;
 
             base.Initialize();
 

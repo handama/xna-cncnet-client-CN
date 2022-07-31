@@ -71,6 +71,8 @@ namespace ClientCore
             TargetLines = new BoolSetting(iniFile, OPTIONS, "UnitActionLines", true);
             ScrollCoasting = new IntSetting(iniFile, OPTIONS, "ScrollMethod", 0);
             Tooltips = new BoolSetting(iniFile, OPTIONS, "ToolTips", true);
+            ToolTipDescriptions = new BoolSetting(iniFile, "Phobos", "ToolTipDescriptions", false);
+            LoadRootFolderMaps = new BoolSetting(iniFile, "Options", "LoadRootFolderMaps", true);
             ShowHiddenObjects = new BoolSetting(iniFile, OPTIONS, "ShowHidden", true);
             MoveToUndeploy = new BoolSetting(iniFile, OPTIONS, "MoveToUndeploy", true);
             TextBackgroundColor = new IntSetting(iniFile, OPTIONS, "TextBackgroundColor", 0);
@@ -146,6 +148,10 @@ namespace ClientCore
         public BoolSetting TargetLines { get; private set; }
         public IntSetting ScrollCoasting { get; private set; }
         public BoolSetting Tooltips { get; private set; }
+
+        public BoolSetting ToolTipDescriptions { get; private set; }
+        public BoolSetting LoadRootFolderMaps { get; private set; }
+        
         public BoolSetting ShowHiddenObjects { get; private set; }
         public BoolSetting MoveToUndeploy { get; private set; }
         public IntSetting TextBackgroundColor { get; private set; }

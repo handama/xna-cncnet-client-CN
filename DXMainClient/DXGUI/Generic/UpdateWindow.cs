@@ -68,7 +68,7 @@ namespace DTAClient.DXGUI.Generic
             lblDescription.Name = "lblDescription";
 
             var lblCurrentFileProgressPercentage = new XNALabel(WindowManager);
-            lblCurrentFileProgressPercentage.Text = "Progress percentage of current file:";
+            lblCurrentFileProgressPercentage.Text = "当前文件进度：";
             lblCurrentFileProgressPercentage.ClientRectangle = new Rectangle(12, 90, 0, 0);
             lblCurrentFileProgressPercentage.Name = "lblCurrentFileProgressPercentage";
 
@@ -90,7 +90,7 @@ namespace DTAClient.DXGUI.Generic
             lblCurrentFile.ClientRectangle = new Rectangle(12, 142, 0, 0);
 
             var lblTotalProgressPercentage = new XNALabel(WindowManager);
-            lblTotalProgressPercentage.Text = "Total progress percentage:";
+            lblTotalProgressPercentage.Text = "总进度：";
             lblTotalProgressPercentage.ClientRectangle = new Rectangle(12, 170, 0, 0);
             lblTotalProgressPercentage.Name = "lblTotalProgressPercentage";
 
@@ -107,12 +107,12 @@ namespace DTAClient.DXGUI.Generic
 
             lblUpdaterStatus = new XNALabel(WindowManager);
             lblUpdaterStatus.Name = "lblUpdaterStatus";
-            lblUpdaterStatus.Text = "Preparing";
+            lblUpdaterStatus.Text = "准备中";
             lblUpdaterStatus.ClientRectangle = new Rectangle(12, 240, 0, 0);
 
             var btnCancel = new XNAClientButton(WindowManager);
             btnCancel.ClientRectangle = new Rectangle(301, 240, 133, 23);
-            btnCancel.Text = "Cancel";
+            btnCancel.Text = "取消";
             btnCancel.LeftClick += BtnCancel_LeftClick;
 
             AddChild(lblDescription);
@@ -147,7 +147,7 @@ namespace DTAClient.DXGUI.Generic
 
             if (CUpdater.DTAVersionState == VersionState.UNKNOWN)
             {
-                XNAMessageBox.Show(WindowManager, "Force Update Failure", "Checking for updates failed.");
+                XNAMessageBox.Show(WindowManager, "强制更新失败", "无法检查更新。");
                 CloseWindow();
                 return;
             }
@@ -199,8 +199,8 @@ namespace DTAClient.DXGUI.Generic
 
             lblCurrentFileProgressPercentageValue.Text = prgCurrentFile.Value.ToString() + "%";
             lblTotalProgressPercentageValue.Text = prgTotal.Value.ToString() + "%";
-            lblCurrentFile.Text = "Current file: " + currFileName;
-            lblUpdaterStatus.Text = "Downloading files";
+            lblCurrentFile.Text = "当前文件： " + currFileName;
+            lblUpdaterStatus.Text = "下载文件";
 
             /*/ TODO Improve the updater
              * When the updater thread in DTAUpdater.dll has completed the update, it will
@@ -272,17 +272,17 @@ namespace DTAClient.DXGUI.Generic
 
         public void SetData(string newGameVersion)
         {
-            lblDescription.Text = String.Format("Please wait while {0} is updated to version {1}." + Environment.NewLine +
-                "This window will automatically close once the update is complete." + Environment.NewLine + Environment.NewLine +
-                "The client may also restart after the update has been downloaded.", MainClientConstants.GAME_NAME_SHORT, newGameVersion);
-            lblUpdaterStatus.Text = "Preparing";
+            lblDescription.Text = String.Format("{0} 正在升级到 {1} 版本。" + Environment.NewLine +   ///
+                "本窗口会在升级完成时自动关闭。" + Environment.NewLine  +
+                "更新包下载完成后，客户端有可能会重启。", MainClientConstants.GAME_NAME_LONG, newGameVersion);
+            lblUpdaterStatus.Text = "准备中";
         }
 
         public void ForceUpdate()
         {
             isStartingForceUpdate = true;
-            lblDescription.Text = $"Force updating {MainClientConstants.GAME_NAME_SHORT} to latest version...";
-            lblUpdaterStatus.Text = "Connecting";
+            lblDescription.Text = $"将 {MainClientConstants.GAME_NAME_LONG} 强制更新到新版本...";
+            lblUpdaterStatus.Text = "连接中";
             CUpdater.CheckForUpdates();
         }
 

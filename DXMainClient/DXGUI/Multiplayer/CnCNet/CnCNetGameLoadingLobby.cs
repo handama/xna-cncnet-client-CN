@@ -235,9 +235,9 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 channel.SendCTCPMessage(TUNNEL_PING_CTCP_COMMAND + " " + tunnel.PingInMs, QueuedMessageType.SYSTEM_MESSAGE, 10);
 
                 if (tunnel.PingInMs < 0)
-                    AddNotice(ProgramConstants.PLAYERNAME + " - unknown ping to tunnel server.");
+                    AddNotice(ProgramConstants.PLAYERNAME + "无法探测到隧道服。");
                 else
-                    AddNotice(ProgramConstants.PLAYERNAME + " - ping to tunnel server: " + tunnel.PingInMs + " ms");
+                    AddNotice(ProgramConstants.PLAYERNAME + "该隧道服的延迟是：" + tunnel.PingInMs + " ms");
             }
 
             topBar.AddPrimarySwitchable(this);
@@ -288,7 +288,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             if (!IsHost && playerName == hostName && !ProgramConstants.IsInGame)
             {
                 connectionManager.MainChannel.AddMessage(new ChatMessage(
-                    Color.Yellow,"The game host left the game!"));
+                    Color.Yellow,"房主离开了房间！"));
 
                 Clear();
             }
@@ -404,7 +404,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             if (sender != hostName)
                 return;
 
-            AddNotice(cheaterName + " - modified files detected! They could be cheating!", Color.Red);
+            AddNotice("检测到 " + cheaterName + " 修改了文件！他们可能在作弊！", Color.Red);
 
             if (IsHost)
                 channel.SendCTCPMessage(INVALID_FILE_HASH_CTCP_COMMAND + " " + cheaterName, QueuedMessageType.SYSTEM_MESSAGE, 0);
@@ -413,9 +413,9 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
         private void HandleTunnelPingNotification(string sender, int pingInMs)
         {
             if (pingInMs < 0)
-                AddNotice(sender + " - unknown ping to tunnel server.");
+                AddNotice(sender + "无法探测到隧道服。");
             else
-                AddNotice(sender + " - ping to tunnel server: " + pingInMs + " ms");
+                AddNotice(sender + "该隧道服的延迟是：" + pingInMs + " ms");
         }
 
         /// <summary>
@@ -438,7 +438,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             if (sgIndex >= ddSavedGame.Items.Count)
             {
-                AddNotice("The game host has selected an invalid saved game index! " + sgIndex);
+                AddNotice("房主选择了一个无效的保存的游戏！" + sgIndex);
                 channel.SendCTCPMessage(INVALID_SAVED_GAME_INDEX_CTCP_COMMAND, QueuedMessageType.SYSTEM_MESSAGE, 10);
                 return;
             }
@@ -478,7 +478,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             pInfo.Ready = false;
 
-            AddNotice(pInfo.Name + " does not have the selected saved game on their system! Try selecting an earlier saved game.");
+            AddNotice(pInfo.Name + " 没有此保存的游戏！尝试更换更早的一个保存。");
 
             CopyPlayerDataToUI();
         }
@@ -539,13 +539,13 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
         protected override void HostStartGame()
         {
-            AddNotice("Contacting tunnel server..");
+            AddNotice("连接到隧道服..");
             List<int> playerPorts = tunnel.GetPlayerPortInfo(SGPlayers.Count);
 
             if (playerPorts.Count < Players.Count)
             {
-                AddNotice("An error occured while contacting the specified CnCNet tunnel server. Please try using a different tunnel server " +
-                    "(accessible through the advanced options in the game creation window).", Color.Yellow);
+                AddNotice("连接指定的CnCNet隧道服务器时出错。请尝试使用其他隧道服务器" +
+                    "(可通过游戏创建窗口中的高级选项访问)。", Color.Yellow);
                 return;
             }
 
@@ -562,7 +562,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             sb.Remove(sb.Length - 1, 1);
             channel.SendCTCPMessage(sb.ToString(), QueuedMessageType.SYSTEM_MESSAGE, 9);
 
-            AddNotice("Starting game..");
+            AddNotice("开始游戏中..");
 
             started = true;
 
@@ -654,7 +654,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             PlayerInfo player = Players.Find(p => p.Name == ProgramConstants.PLAYERNAME);
             if (player == null)
                 return;
-            string currentState = ProgramConstants.IsInGame ? "In Game" : "In Lobby";
+            string currentState = ProgramConstants.IsInGame ? "在游戏中" : "在大厅中";
 
             discordHandler.UpdatePresence(
                 lblMapNameValue.Text, lblGameModeValue.Text, "Multiplayer",

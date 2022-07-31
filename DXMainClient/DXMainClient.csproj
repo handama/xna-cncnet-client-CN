@@ -245,6 +245,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\References\Ionic.Zip.dll</HintPath>
     </Reference>
+    <Reference Include="Localization">
+      <HintPath>..\References\Localization.dll</HintPath>
+    </Reference>
     <Reference Include="MapThumbnailExtractor">
       <HintPath>..\References\MapThumbnailExtractor.dll</HintPath>
     </Reference>

@@ -53,7 +53,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             if (pmUser != null)
             {
                 leaveMessage = new ChatMessage(Color.White,
-                    e.UserName + " is now offline.");
+                    e.UserName + " 离线了。");
                 pmUser.Messages.Add(leaveMessage);
             }
 
@@ -102,7 +102,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             if (pmUser != null)
             {
-                joinMessage = new ChatMessage(e.User.Name + " is now online.");
+                joinMessage = new ChatMessage(e.User.Name + " 上线了。");
                 pmUser.Messages.Add(joinMessage);
             }
 
@@ -226,7 +226,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             lblPrivateMessaging = new XNALabel(WindowManager);
             lblPrivateMessaging.Name = "lblPrivateMessaging";
             lblPrivateMessaging.FontIndex = 1;
-            lblPrivateMessaging.Text = "PRIVATE MESSAGING";
+            lblPrivateMessaging.Text = "私信";
 
             AddChild(lblPrivateMessaging);
             lblPrivateMessaging.CenterOnParent();
@@ -240,16 +240,16 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             tabControl.ClientRectangle = new Rectangle(60, 50, 0, 0);
             tabControl.ClickSound = new EnhancedSoundEffect("button.wav");
             tabControl.FontIndex = 1;
-            tabControl.AddTab("Messages", 160);
-            tabControl.AddTab("Friend List", 160);
-            tabControl.AddTab("All Players", 160);
+            tabControl.AddTab("信息", 160);
+            tabControl.AddTab("好友列表", 160);
+            tabControl.AddTab("所有玩家", 160);
             tabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
 
             lblPlayers = new XNALabel(WindowManager);
             lblPlayers.Name = "lblPlayers";
             lblPlayers.ClientRectangle = new Rectangle(12, tabControl.Bottom + 24, 0, 0);
             lblPlayers.FontIndex = 1;
-            lblPlayers.Text = "PLAYERS:";
+            lblPlayers.Text = "玩家：";
 
             lbUserList = new XNAListBox(WindowManager);
             lbUserList.Name = "lbUserList";
@@ -266,7 +266,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             lblMessages.ClientRectangle = new Rectangle(lbUserList.Right + 12,
                 lblPlayers.Y, 0, 0);
             lblMessages.FontIndex = 1;
-            lblMessages.Text = "MESSAGES:";
+            lblMessages.Text = "信息：";
 
             lbMessages = new ChatListBox(WindowManager);
             lbMessages.Name = "lbMessages";
@@ -290,7 +290,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             playerContextMenu.ClientRectangle = new Rectangle(0, 0, 150, 2);
             playerContextMenu.Enabled = false;
             playerContextMenu.Visible = false;
-            playerContextMenu.AddItem("Add Friend", PlayerContextMenu_ToggleFriend);
+            playerContextMenu.AddItem("添加好友", PlayerContextMenu_ToggleFriend);
 
             notificationBox = new PrivateMessageNotificationBox(WindowManager);
             notificationBox.Enabled = false;
@@ -338,7 +338,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 return;
             }
 
-            playerContextMenu.Items[0].Text = cncnetUserData.IsFriend(lbUserList.SelectedItem.Text) ? "Remove Friend" : "Add Friend";
+            playerContextMenu.Items[0].Text = cncnetUserData.IsFriend(lbUserList.SelectedItem.Text) ? "移除好友" : "添加好友";
 
             playerContextMenu.Open(GetCursorPoint());
         }

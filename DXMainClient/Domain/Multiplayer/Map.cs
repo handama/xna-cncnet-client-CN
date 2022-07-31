@@ -1,4 +1,5 @@
 ﻿using ClientCore;
+using Localization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PreviewExtractor;
@@ -23,12 +24,22 @@ namespace DTAClient.Domain.Multiplayer
         {
             BaseFilePath = path;
             Official = official;
+            Extension = ".map";
+        }
+
+        public void MapExtension(string extension)
+        {
+            Extension = extension;
+        }
+        public void AddPrefix()
+        {
+            Name = "[Custom]".L10N("UI:Maps:CustomMapPrefix") + Name;
         }
 
         /// <summary>
         /// The name of the map.
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// The maximum amount of players supported by the map.
@@ -84,11 +95,14 @@ namespace DTAClient.Domain.Multiplayer
         /// </summary>
         public string BaseFilePath { get; private set; }
 
+        public string Extension { get; set; }
+
+
         /// <summary>
         /// Returns the complete path to the map file.
         /// Includes the game directory in the path.
         /// </summary>
-        public string CompleteFilePath => ProgramConstants.GamePath + BaseFilePath + ".map";
+        public string CompleteFilePath => ProgramConstants.GamePath + BaseFilePath + Extension;
 
         /// <summary>
         /// The file name of the preview image.
@@ -109,6 +123,9 @@ namespace DTAClient.Domain.Multiplayer
         /// If set, players are forced to random starting locations on this map.
         /// </summary>
         public bool ForceRandomStartLocations { get; private set; }
+
+        public bool UseClientRandomStartLocations { get; private set; }
+        
 
         /// <summary>
         /// If set, players are forced to different teams on this map.
@@ -184,8 +201,9 @@ namespace DTAClient.Domain.Multiplayer
 
                 var section = iniFile.GetSection(BaseFilePath);
 
-                Name = section.GetStringValue("Description", "Unnamed map");
-                Author = section.GetStringValue("Author", "Unknown author");
+                Name = section.GetStringValue("Description", "未命名地图");
+                if (!Official) AddPrefix();
+                Author = section.GetStringValue("Author", "佚名");
                 GameModes = section.GetStringValue("GameModes", "Default").Split(',');
 
                 MinPlayers = section.GetIntValue("MinPlayers", 0);
@@ -203,6 +221,7 @@ namespace DTAClient.Domain.Multiplayer
                 MultiplayerOnly = section.GetBooleanValue("MultiplayerOnly", false);
                 HumanPlayersOnly = section.GetBooleanValue("HumanPlayersOnly", false);
                 ForceRandomStartLocations = section.GetBooleanValue("ForceRandomStartLocations", false);
+                UseClientRandomStartLocations = section.GetBooleanValue("UseClientRandomStartLocations", false);
                 ForceNoTeams = section.GetBooleanValue("ForceNoTeams", false);
                 ExtraININame = section.GetStringValue("ExtraININame", string.Empty);
                 string bases = section.GetStringValue("Bases", string.Empty);
@@ -325,8 +344,9 @@ namespace DTAClient.Domain.Multiplayer
 
                 var basicSection = iniFile.GetSection("Basic");
 
-                Name = basicSection.GetStringValue("Name", "Unnamed map");
-                Author = basicSection.GetStringValue("Author", "Unknown author");
+                Name = basicSection.GetStringValue("Name", "未命名地图");
+                if (!Official) AddPrefix();
+                Author = basicSection.GetStringValue("Author", "佚名");
 
                 string gameModesString = basicSection.GetStringValue("GameModes", string.Empty);
                 if (string.IsNullOrEmpty(gameModesString))
@@ -340,6 +360,12 @@ namespace DTAClient.Domain.Multiplayer
                 {
                     Logger.Log("Custom map " + path + " has no game modes!");
                     return false;
+                }
+                
+                for (int i = 0; i < GameModes.Length; i++)
+                {
+                    string gameMode = GameModes[i].Trim();
+                    GameModes[i] = gameMode.Substring(0, 1).ToUpperInvariant() + gameMode.Substring(1);
                 }
 
                 MinPlayers = 0;
@@ -359,6 +385,7 @@ namespace DTAClient.Domain.Multiplayer
                 SpecialHouseColor = basicSection.GetIntValue("SpecialColor", -1);
                 HumanPlayersOnly = basicSection.GetBooleanValue("HumanPlayersOnly", false);
                 ForceRandomStartLocations = basicSection.GetBooleanValue("ForceRandomStartLocations", false);
+                UseClientRandomStartLocations = basicSection.GetBooleanValue("UseClientRandomStartLocations", false);
                 ForceNoTeams = basicSection.GetBooleanValue("ForceNoTeams", false);
                 PreviewPath = Path.ChangeExtension(path.Substring(ProgramConstants.GamePath.Length), ".png");
                 MultiplayerOnly = basicSection.GetBooleanValue("ClientMultiplayerOnly", false);

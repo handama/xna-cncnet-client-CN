@@ -28,25 +28,46 @@ namespace DTAClient.Online
         /// <summary>
         /// The list of CnCNet / GameSurge IRC servers to connect to.
         /// </summary>
-        private static readonly IList<Server> Servers = new List<Server>
+        class InvalidINIFileException : Exception
         {
-            new Server("irc.gamesurge.net", "GameSurge", new int[1] { 6667 }),
-            new Server("Burstfire.UK.EU.GameSurge.net", "GameSurge London, UK", new int[3] { 6667, 6668, 7000 }),
-            new Server("ColoCrossing.IL.US.GameSurge.net", "GameSurge Chicago, IL", new int[5] { 6660, 6666, 6667, 6668, 6669 }),
-            new Server("Gameservers.NJ.US.GameSurge.net", "GameSurge Newark, NJ", new int[7] { 6665, 6666, 6667, 6668, 6669, 7000, 8080 }),
-            new Server("Krypt.CA.US.GameSurge.net", "GameSurge Santa Ana, CA", new int[4] { 6666, 6667, 6668, 6669 }),
-            new Server("NuclearFallout.WA.US.GameSurge.net", "GameSurge Seattle, WA", new int[2] { 6667, 5960 }),
-            new Server("Portlane.SE.EU.GameSurge.net", "GameSurge Stockholm, Sweden", new int[5] { 6660, 6666, 6667, 6668, 6669 }),
-            new Server("Prothid.NY.US.GameSurge.Net", "GameSurge NYC, NY", new int[7] { 5960, 6660, 6666, 6667, 6668, 6669, 6697 }),
-            new Server("TAL.DE.EU.GameSurge.net", "GameSurge Wuppertal, Germany", new int[5] { 6660, 6666, 6667, 6668, 6669 }),
-            new Server("208.167.237.120", "GameSurge IP 208.167.237.120", new int[7] {  6660, 6666, 6667, 6668, 6669, 7000, 8080 }),
-            new Server("192.223.27.109", "GameSurge IP 192.223.27.109", new int[7] {  6660, 6666, 6667, 6668, 6669, 7000, 8080 }),
-            new Server("108.174.48.100", "GameSurge IP 108.174.48.100", new int[7] { 6660, 6666, 6667, 6668, 6669, 7000, 8080 }),
-            new Server("208.146.35.105", "GameSurge IP 208.146.35.105", new int[7] { 6660, 6666, 6667, 6668, 6669, 7000, 8080 }),
-            new Server("195.8.250.180", "GameSurge IP 195.8.250.180", new int[7] { 6660, 6666, 6667, 6668, 6669, 7000, 8080 }),
-            new Server("91.217.189.76", "GameSurge IP 91.217.189.76", new int[7] { 6660, 6666, 6667, 6668, 6669, 7000, 8080 }),
-            new Server("195.68.206.250", "GameSurge IP 195.68.206.250", new int[7] { 6660, 6666, 6667, 6668, 6669, 7000, 8080 }),
-        }.AsReadOnly();
+            public InvalidINIFileException(string message) : base(message)
+            {
+            }
+        }
+        public void LoadServers()
+        {
+
+            IniFile IRCServersIni = new IniFile(ProgramConstants.GetBaseResourcePath() + "IRCServers.ini");
+
+            List<string> severKeys = IRCServersIni.GetSectionKeys("Servers");
+
+            if (severKeys == null)
+                throw new InvalidINIFileException("[Servers] not found in IRCServers.ini!");
+
+            foreach (string key in severKeys)
+            {
+                string[] values = IRCServersIni.GetStringValue("Servers", key, "101.42.159.10&Cold AI, CN&6667").Split('&');
+                
+                try
+                {
+                    int[] ports = Array.ConvertAll(values[2].Split(','), int.Parse);
+                    Server server1 = new Server();
+                    server1.Host = values[0];
+                    server1.Name = values[1];
+                    server1.Ports = ports;
+                    Logger.Log(values[0] + values[1] + ports);
+                    Servers.Add(server1);
+                }
+                catch
+                {
+                    throw new Exception("Invalid Server specified in IRCServers.ini: " + key);
+                }
+            }
+        }
+        private static IList<Server> Servers = new List<Server>
+        {
+
+        };
 
         bool _isConnected = false;
         public bool IsConnected
@@ -131,7 +152,7 @@ namespace DTAClient.Online
         public void ConnectAsync()
         {
             if (_isConnected)
-                throw new Exception("The client is already connected!");
+                throw new Exception("客户端已经在线！");
 
             if (_attemptingConnection)
                 return; // Maybe we should throw in this case as well?
@@ -152,6 +173,7 @@ namespace DTAClient.Online
         /// </summary>
         private void ConnectToServer()
         {
+            LoadServers();
             for (int serverId = 0; serverId < Servers.Count; serverId++)
             {
                 if (failedServerIds.Contains(serverId))

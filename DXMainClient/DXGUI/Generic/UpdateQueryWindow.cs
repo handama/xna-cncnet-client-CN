@@ -42,7 +42,7 @@ namespace DTAClient.DXGUI.Generic
 
             var lblChangelogLink = new XNALinkLabel(WindowManager);
             lblChangelogLink.ClientRectangle = new Rectangle(12, 50, 0, 0);
-            lblChangelogLink.Text = "View Changelog";
+            lblChangelogLink.Text = "查看更新内容";
             lblChangelogLink.IdleColor = Color.Goldenrod;
             lblChangelogLink.Name = nameof(lblChangelogLink);
             lblChangelogLink.LeftClick += LblChangelogLink_LeftClick;
@@ -54,13 +54,13 @@ namespace DTAClient.DXGUI.Generic
 
             var btnYes = new XNAClientButton(WindowManager);
             btnYes.ClientRectangle = new Rectangle(12, 110, 75, 23);
-            btnYes.Text = "Yes";
+            btnYes.Text = "是";
             btnYes.LeftClick += BtnYes_LeftClick;
             btnYes.Name = nameof(btnYes);
 
             var btnNo = new XNAClientButton(WindowManager);
             btnNo.ClientRectangle = new Rectangle(164, 110, 75, 23);
-            btnNo.Text = "No";
+            btnNo.Text = "否";
             btnNo.LeftClick += BtnNo_LeftClick;
             btnNo.Name = nameof(btnNo);
 
@@ -92,11 +92,11 @@ namespace DTAClient.DXGUI.Generic
 
         public void SetInfo(string version, int updateSize)
         {
-            lblDescription.Text = string.Format("Version {0} is available for download." + Environment.NewLine + "Do you wish to install it?", version);
+            lblDescription.Text = string.Format("新版本 {0} 已经上线了！" + Environment.NewLine + "你想要安装它吗？", version);
             if (updateSize >= 1000)
-                lblUpdateSize.Text = string.Format("The size of the update is {0} MB.", updateSize / 1000);
+                lblUpdateSize.Text = string.Format("更新的大小是 {0} MB.", updateSize / 1000);
             else
-                lblUpdateSize.Text = string.Format("The size of the update is {0} KB.", updateSize);
+                lblUpdateSize.Text = string.Format("更新的大小是 {0} KB.", updateSize);
         }
     }
 }

@@ -53,7 +53,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             btnApply.Name = "btnApply";
             btnApply.Width = UIDesignConstants.BUTTON_WIDTH_92;
             btnApply.Height = UIDesignConstants.BUTTON_HEIGHT;
-            btnApply.Text = "Apply";
+            btnApply.Text = "应用";
             btnApply.Y = lbTunnelList.Bottom + UIDesignConstants.CONTROL_VERTICAL_MARGIN;
             AddChild(btnApply);
             btnApply.LeftClick += BtnApply_LeftClick;

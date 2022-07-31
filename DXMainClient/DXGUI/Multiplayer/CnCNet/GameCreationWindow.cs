@@ -52,22 +52,22 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             btnCreateGame = new XNAClientButton(WindowManager);
             btnCreateGame.ClientRectangle = new Rectangle(12, 159, 133, 23);
-            btnCreateGame.Text = "Create Game";
+            btnCreateGame.Text = "创建房间";
             btnCreateGame.LeftClick += BtnCreateGame_LeftClick;
 
             btnCancel = new XNAClientButton(WindowManager);
             btnCancel.ClientRectangle = new Rectangle(345, btnCreateGame.Y, 133, 23);
-            btnCancel.Text = "Cancel";
+            btnCancel.Text = "取消";
             btnCancel.LeftClick += BtnCancel_LeftClick;
 
             btnLoadMPGame = new XNAClientButton(WindowManager);
             btnLoadMPGame.ClientRectangle = new Rectangle(178, btnCreateGame.Y, 133, 23);
-            btnLoadMPGame.Text = "Load Game";
+            btnLoadMPGame.Text = "加载游戏";
             btnLoadMPGame.LeftClick += BtnLoadMPGame_LeftClick;
 
             btnDisplayAdvancedOptions = new XNAClientButton(WindowManager);
             btnDisplayAdvancedOptions.ClientRectangle = new Rectangle(12, 124, 160, 23);
-            btnDisplayAdvancedOptions.Text = "Advanced Options";
+            btnDisplayAdvancedOptions.Text = "高级选项";
             btnDisplayAdvancedOptions.LeftClick += BtnDisplayAdvancedOptions_LeftClick;
 
             tbGameName = new XNATextBox(WindowManager);
@@ -77,7 +77,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             lblRoomName = new XNALabel(WindowManager);
             lblRoomName.ClientRectangle = new Rectangle(12, tbGameName.Y + 1, 0, 0);
-            lblRoomName.Text = "Game room name:";
+            lblRoomName.Text = "房间名：";
 
             ddMaxPlayers = new XNAClientDropDown(WindowManager);
             ddMaxPlayers.ClientRectangle = new Rectangle(tbGameName.X, 53, 
@@ -88,7 +88,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             lblMaxPlayers = new XNALabel(WindowManager);
             lblMaxPlayers.ClientRectangle = new Rectangle(12, ddMaxPlayers.Y + 1, 0, 0);
-            lblMaxPlayers.Text = "Maximum number of players:";
+            lblMaxPlayers.Text = "最大玩家数：";
 
             tbPassword = new XNATextBox(WindowManager);
             tbPassword.MaximumTextLength = 20;
@@ -97,11 +97,11 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             lblPassword = new XNALabel(WindowManager);
             lblPassword.ClientRectangle = new Rectangle(12, tbPassword.Y + 1, 0, 0);
-            lblPassword.Text = "Password (leave blank for none):";
+            lblPassword.Text = "密码(留白为无)";
 
             lblTunnelServer = new XNALabel(WindowManager);
             lblTunnelServer.ClientRectangle = new Rectangle(12, 134, 0, 0);
-            lblTunnelServer.Text = "Tunnel server:";
+            lblTunnelServer.Text = "隧道服务器：";
             lblTunnelServer.Enabled = false;
             lblTunnelServer.Visible = false;
 
@@ -195,8 +195,8 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             if (new ProfanityFilter().IsOffensive(gameName))
             {
-                XNAMessageBox.Show(WindowManager, "Offensive game name", 
-                    "Please enter a less offensive game name.");
+                XNAMessageBox.Show(WindowManager, "房间名不友好", 
+                    "请更换一个友好的房间名。");
                 return;
             }
 

@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Linq;
+using Localization;
 
 namespace DTAClient.Domain.Multiplayer
 {
     public class MapLoader
     {
         public const string MAP_FILE_EXTENSION = ".map";
-        private const string CUSTOM_MAPS_DIRECTORY = "Maps\\Custom";
+        private string CUSTOM_MAPS_DIRECTORY = $"Maps\\{ClientConfiguration.Instance.CustomMapFolderName}";
 
         /// <summary>
         /// List of game modes.
@@ -43,6 +44,100 @@ namespace DTAClient.Domain.Multiplayer
         {
             Thread thread = new Thread(LoadMaps);
             thread.Start();
+        }
+        private string[] GetMaps(string dirPath ,bool isBaseFolder, params string[] searchPatterns)
+        {
+            string[] IgnoreMaps = {
+                "Tower.mmx",
+                "Tsunami.mmx",
+                "Valley.mmx",
+                "xmas.mmx",
+                "YuriPlot.mmx",
+                "amazon.mmx",
+                "Arena.mmx",
+                "Barrel.mmx",
+                "BayOPigs.mmx",
+                "Bermuda.mmx",
+                "Break.mmx",
+                "Carville.mmx",
+                "Deadman.mmx",
+                "Death.mmx",
+                "Disaster.mmx",
+                "Dustbowl.mmx",
+                "EB1.mmx",
+                "EB2.mmx",
+                "EB3.mmx",
+                "EB4.mmx",
+                "EB5.mmx",
+                "GoldSt.mmx",
+                "Grinder.mmx",
+                "HailMary.mmx",
+                "Hills.mmx",
+                "invasion.mmx",
+                "Kaliforn.mmx",
+                "Killer.mmx",
+                "Lostlake.mmx",
+                "NewHghts.mmx",
+                "Oceansid.mmx",
+                "Pacific.mmx",
+                "Potomac.mmx",
+                "PowdrKeg.mmx",
+                "Rockets.mmx",
+                "Roulette.mmx",
+                "Round.mmx",
+                "SeaofIso.mmx",
+                "Shrapnel.mmx",
+                "Tanyas.mmx",
+                "DeepFrze.yro",
+                "HighExpR.yro",
+                "Ice_Age.yro",
+                "IrvineCa.yro",
+                "IsleLand.yro",
+                "MojoSprt.yro",
+                "MonsterM.yro",
+                "MoonPatr.yro",
+                "RiverRam.yro",
+                "SinkSwim.yro",
+                "Transylv.yro",
+                "Unrepent.yro",
+                "CrctBrd.yro"
+            };
+            if (searchPatterns.Length <= 0)
+            {
+                return null;
+            }
+            else
+            {
+                DirectoryInfo di = new DirectoryInfo(dirPath);
+                FileInfo[][] fis = new FileInfo[searchPatterns.Length][];
+                int count = 0;
+                for (int i = 0; i < searchPatterns.Length; i++)
+                {
+                    FileInfo[] fileInfos = di.GetFiles(searchPatterns[i]);
+                    fis[i] = fileInfos;
+                    count += fileInfos.Length;
+                }
+                string[] files = new string[count];
+                int n = 0;
+                for (int i = 0; i <= fis.GetUpperBound(0); i++)
+                {
+                    for (int j = 0; j < fis[i].Length; j++)
+                    {
+                        string name = fis[i][j].Name;
+                        bool hasIgnoreMap = IgnoreMaps.Any((id) =>
+                        {
+                            return name.Equals(id, StringComparison.OrdinalIgnoreCase);
+                        });
+                        if ( !(hasIgnoreMap && isBaseFolder) )
+                        {
+                            string temp = fis[i][j].FullName;
+                            files[n] = temp;
+                            n++;
+                        }
+                    }
+                }
+                return files;
+            }
         }
 
         /// <summary>
@@ -121,16 +216,28 @@ namespace DTAClient.Domain.Multiplayer
             }
             else
             {
-                string[] files = Directory.GetFiles(ProgramConstants.GamePath + CUSTOM_MAPS_DIRECTORY, "*.map");
-
+                string[] mapsInCustomFolder = GetMaps(ProgramConstants.GamePath + CUSTOM_MAPS_DIRECTORY, false , "*.map", "*.yrm", "*.mpr", "*.mmx", "*.yro");
+                string[] files = { };
+                IniFile settingsIni = new IniFile(ProgramConstants.GamePath + ClientConfiguration.Instance.SettingsIniName);
+                if (settingsIni.GetBooleanValue ("Options", "LoadRootFolderMaps", true))
+                {
+                    string[] mapsInRootFolder = GetMaps(ProgramConstants.GamePath, true, "*.yrm", "*.mpr", "*.mmx", "*.yro");
+                    files = mapsInCustomFolder.Concat(mapsInRootFolder).ToArray();
+                }
+                else files = mapsInCustomFolder;
                 foreach (string file in files)
                 {
-                    string baseFilePath = file.Substring(ProgramConstants.GamePath.Length);
-                    baseFilePath = baseFilePath.Substring(0, baseFilePath.Length - 4);
-
-                    Map map = new Map(baseFilePath, false);
-                    if (map.SetInfoFromMap(file))
-                        customMaps.Add(map);
+                    if (file != null) 
+                    { 
+                        string baseFilePath = file.Substring(ProgramConstants.GamePath.Length);
+                        string extension = baseFilePath.Substring(baseFilePath.Length - 4);
+                        baseFilePath = baseFilePath.Substring(0, baseFilePath.Length - 4);
+                        
+                        Map map = new Map(baseFilePath, false);
+                        map.MapExtension(extension);
+                        if (map.SetInfoFromMap(file))
+                            customMaps.Add(map);
+                    }
                 }
             }
 
@@ -154,8 +261,8 @@ namespace DTAClient.Domain.Multiplayer
         {
             if (!File.Exists(ProgramConstants.GamePath + mapPath + MAP_FILE_EXTENSION))
             {
-                Logger.Log("LoadCustomMap: Map " + mapPath + " not found!");
-                resultMessage = $"Map file {mapPath}{MAP_FILE_EXTENSION} doesn't exist!";
+                Logger.Log("LoadCustomMap: Map " + mapPath + MAP_FILE_EXTENSION +" not found!");
+                resultMessage = $"地图文件 {mapPath}{MAP_FILE_EXTENSION}不存在！";
 
                 return null;
             }
@@ -170,7 +277,7 @@ namespace DTAClient.Domain.Multiplayer
                     if (gm.Maps.Find(m => m.SHA1 == map.SHA1) != null)
                     {
                         Logger.Log("LoadCustomMap: Custom map " + mapPath + " is already loaded!");
-                        resultMessage = $"Map {mapPath} is already loaded.";
+                        resultMessage = $"地图 {mapPath}{MAP_FILE_EXTENSION} 已经被加载。";
 
                         return null;
                     }
@@ -180,17 +287,58 @@ namespace DTAClient.Domain.Multiplayer
 
                 AddMapToGameModes(map, true);
 
-                resultMessage = $"Map {mapPath} loaded succesfully.";
+                resultMessage = $"地图 {mapPath}{MAP_FILE_EXTENSION} 成功加载。";
 
                 return map;
             }
 
             Logger.Log("LoadCustomMap: Loading map " + mapPath + " failed!");
-            resultMessage = $"Loading map {mapPath} failed!";
+            resultMessage = $"加载地图 {mapPath}{MAP_FILE_EXTENSION} 失败！";
 
             return null;
         }
+        public Map LoadCustomMapManual(string mapPath, out string resultMessage)
+        {
+            if (!File.Exists(ProgramConstants.GamePath + mapPath))
+            {
+                Logger.Log("LoadCustomMap: Map " + mapPath + " not found!");
+                resultMessage = $"地图文件 {mapPath} 不存在！";
 
+                return null;
+            }
+
+            Logger.Log("LoadCustomMap: Loading custom map " + mapPath);
+            string mapPath2 = mapPath.Substring(0, mapPath.Length - 4);
+            Map map = new Map(mapPath2, false);
+            map.MapExtension(mapPath.Substring(mapPath.Length - 4));
+
+            if (map.SetInfoFromMap(ProgramConstants.GamePath + mapPath))
+            {
+                foreach (GameMode gm in GameModes)
+                {
+                    if (gm.Maps.Find(m => m.SHA1 == map.SHA1) != null)
+                    {
+                        Logger.Log("LoadCustomMap: Custom map " + mapPath + " is already loaded!");
+                        resultMessage = $"地图 {mapPath} 已经被加载。";
+
+                        return null;
+                    }
+                }
+
+                Logger.Log("LoadCustomMap: Map " + mapPath + " added succesfully.");
+
+                AddMapToGameModes(map, true);
+
+                resultMessage = $"地图 {mapPath} 成功加载。";
+
+                return map;
+            }
+
+            Logger.Log("LoadCustomMap: Loading map " + mapPath + " failed!");
+            resultMessage = $"加载地图 {mapPath} 失败！";
+
+            return null;
+        }
         /// <summary>
         /// Adds map to all eligible game modes.
         /// </summary>
