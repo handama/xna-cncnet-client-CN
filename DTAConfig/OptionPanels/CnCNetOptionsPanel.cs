@@ -122,7 +122,7 @@ namespace DTAConfig.OptionPanels
                 chkDiscordIntegration.AllowChecking = true;
             }
 
-            AddChild(chkDiscordIntegration);
+            //AddChild(chkDiscordIntegration);
 
             var lblFollowedGames = new XNALabel(WindowManager);
             lblFollowedGames.Name = "lblFollowedGames";

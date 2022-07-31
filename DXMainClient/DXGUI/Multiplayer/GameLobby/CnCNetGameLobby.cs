@@ -1491,7 +1491,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         {
             tunnelHandler.CurrentTunnel = tunnel;
             AddNotice($"房主把隧道服务器换成了：" +
-                $"{tunnel.Name}");
+                $"{tunnel.Name}"+"。");
             UpdatePing();
         }
 

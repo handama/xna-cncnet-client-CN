@@ -26,7 +26,7 @@ namespace DTAClient.DXGUI.Generic
             lblDescription.Name = nameof(lblDescription);
             lblDescription.X = UIDesignConstants.EMPTY_SPACE_SIDES;
             lblDescription.Y = UIDesignConstants.EMPTY_SPACE_TOP;
-            lblDescription.Text = Renderer.FixText("By using the client you agree to the CnCNet Terms & Conditions as well as the CnCNet Privacy Policy. Privacy-related options can be configured in the client options.",
+            lblDescription.Text = Renderer.FixText("使用本客户端即表示您同意CnCNet条款以及CnCNet隐私政策。",
                 lblDescription.FontIndex, WindowManager.RenderResolutionX - (UIDesignConstants.EMPTY_SPACE_SIDES * 2)).Text;
             AddChild(lblDescription);
 
@@ -34,7 +34,7 @@ namespace DTAClient.DXGUI.Generic
             lblMoreInformation.Name = nameof(lblMoreInformation);
             lblMoreInformation.X = lblDescription.X;
             lblMoreInformation.Y = lblDescription.Bottom + UIDesignConstants.CONTROL_VERTICAL_MARGIN;
-            lblMoreInformation.Text = "More information: ";
+            lblMoreInformation.Text = "更多信息（英文）：";
             AddChild(lblMoreInformation);
 
             var lblTermsAndConditions = new XNALinkLabel(WindowManager);
@@ -57,7 +57,7 @@ namespace DTAClient.DXGUI.Generic
             lblExplanation.Name = nameof(lblExplanation);
             lblExplanation.X = UIDesignConstants.EMPTY_SPACE_SIDES;
             lblExplanation.Y = lblMoreInformation.Bottom + UIDesignConstants.CONTROL_VERTICAL_MARGIN * 2;
-            lblExplanation.Text = "No worries, we're not actually using your data for anything evil, but we have to display this message due to regulations.";
+            lblExplanation.Text = "不必担心，我们实际上并没有将您的数据用于任何非法目的，但由于法规的原因，我们必须显示此消息。";
             lblExplanation.TextColor = UISettings.ActiveSettings.SubtleTextColor;
             AddChild(lblExplanation);
 
@@ -66,7 +66,7 @@ namespace DTAClient.DXGUI.Generic
             btnOK.Width = 75;
             btnOK.Y = lblExplanation.Y;
             btnOK.X = WindowManager.RenderResolutionX - btnOK.Width - UIDesignConstants.CONTROL_HORIZONTAL_MARGIN;
-            btnOK.Text = "Got it";
+            btnOK.Text = "了解";
             AddChild(btnOK);
             btnOK.LeftClick += (s, e) => 
             {
