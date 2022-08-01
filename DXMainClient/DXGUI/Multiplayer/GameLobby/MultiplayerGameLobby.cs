@@ -60,6 +60,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         protected XNAClientButton btnLockGame;
         protected XNAClientCheckBox chkAutoReady;
 
+
         protected bool IsHost = false;
 
         private bool locked = false;
@@ -627,6 +628,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 btnLockGame.Visible = true;
                 chkAutoReady.Disable();
 
+                lblPlayerNumbers.Enable();
+                lblAuthor.Enable();
+                ddAuthor.Enable();
+                ddplayerNumbers.Enable();
+
                 foreach (GameLobbyDropDown dd in DropDowns)
                 {
                     dd.InputEnabled = true;
@@ -644,6 +650,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             else
             {
                 HideMapList();
+
+                lblPlayerNumbers.Disable();
+                lblAuthor.Disable();
+                ddAuthor.Disable();
+                ddplayerNumbers.Disable();
 
                 btnLockGame.Enabled = false;
                 btnLockGame.Visible = false;
@@ -1003,9 +1014,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             XNAClientDropDown ddPlayerName = ddPlayerNames[pInfo.Index];
             ddPlayerName.Items[0].Texture = GetTextureForPing(pInfo.Ping);
             if (pInfo.Ping < 0)
-                ddPlayerName.ToolTip.Text = "Ping: ? ms";
+                ddPlayerName.ToolTip.Text = "延迟：? ms";
             else
-                ddPlayerName.ToolTip.Text = $"Ping: {pInfo.Ping} ms";
+                ddPlayerName.ToolTip.Text = $"延迟：{pInfo.Ping} ms";
         }
 
         private Texture2D GetTextureForPing(int ping)

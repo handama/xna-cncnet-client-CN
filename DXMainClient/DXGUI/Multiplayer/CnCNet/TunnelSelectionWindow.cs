@@ -83,6 +83,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
         /// <param name="tunnelAddress">The address of the tunnel server to select.</param>
         public void Open(string description, string tunnelAddress = null)
         {
+            
             lblDescription.Text = description;
 
             if (!string.IsNullOrWhiteSpace(tunnelAddress))

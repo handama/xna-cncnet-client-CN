@@ -41,7 +41,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         public CnCNetGameLobby(WindowManager windowManager, string iniName,
             TopBar topBar, List<GameMode> GameModes, CnCNetManager connectionManager,
-            TunnelHandler tunnelHandler, GameCollection gameCollection, CnCNetUserData cncnetUserData, MapLoader mapLoader, DiscordHandler discordHandler) : 
+            TunnelHandler tunnelHandler, GameCollection gameCollection, CnCNetUserData cncnetUserData, MapLoader mapLoader, DiscordHandler discordHandler) :
             base(windowManager, iniName, topBar, GameModes, mapLoader, discordHandler)
         {
             this.connectionManager = connectionManager;
@@ -1348,7 +1348,6 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             {
                 pInfo.Ping = ping;
                 UpdatePlayerPingIndicator(pInfo);
-                AddNotice(sender + "的延迟：" + ping + " ms。");
             }
             else
                 AddNotice(sender + "无法连接至隧道服务器。");
@@ -1494,8 +1493,6 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         private void HandleTunnelServerChange(CnCNetTunnel tunnel)
         {
             tunnelHandler.CurrentTunnel = tunnel;
-            AddNotice($"房主把隧道服务器换成了：" +
-                $"{tunnel.Name} (你的延迟： {tunnel.PingInMs} ms)。");
             UpdatePing();
         }
 

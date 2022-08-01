@@ -137,6 +137,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
         private void LbTunnelList_ListRefreshed(object sender, EventArgs e)
         {
+
             if (lbTunnelList.ItemCount == 0)
             {
                 btnCreateGame.AllowClick = false;
@@ -149,7 +150,8 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             }
         }
 
-        private void Instance_SettingsSaved(object sender, EventArgs e)
+
+    private void Instance_SettingsSaved(object sender, EventArgs e)
         {
             tbGameName.Text = UserINISettings.Instance.PlayerName.Value + "'s Game";
         }
@@ -186,6 +188,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
         private void BtnCreateGame_LeftClick(object sender, EventArgs e)
         {
+            
             string gameName = tbGameName.Text.Replace(";", string.Empty);
 
             if (string.IsNullOrEmpty(gameName))
@@ -212,6 +215,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
         private void BtnDisplayAdvancedOptions_LeftClick(object sender, EventArgs e)
         {
+            
             Name = "GameCreationWindow_Advanced";
 
             ClientRectangle = new Rectangle(X, Y,
@@ -237,7 +241,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             CenterOnParent();
         }
-
+        
         public void Refresh()
         {
             btnLoadMPGame.AllowClick = AllowLoadingGame();

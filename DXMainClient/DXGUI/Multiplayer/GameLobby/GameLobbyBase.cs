@@ -210,8 +210,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         private MatchStatistics matchStatistics;
 
         private bool disableGameOptionUpdateBroadcast = false;
-        private XNALabel lblPlayerNumbers;
-        private XNALabel lblAuthor;
+        protected XNALabel lblPlayerNumbers;
+        protected XNALabel lblAuthor;
 
         /// <summary>
         /// If set, the client will remove all starting waypoints from the map

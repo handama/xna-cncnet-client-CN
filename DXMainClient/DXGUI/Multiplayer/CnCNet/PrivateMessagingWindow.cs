@@ -226,7 +226,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             lblPrivateMessaging = new XNALabel(WindowManager);
             lblPrivateMessaging.Name = "lblPrivateMessaging";
             lblPrivateMessaging.FontIndex = 1;
-            lblPrivateMessaging.Text = "私信";
+            lblPrivateMessaging.Text = "消息";
 
             AddChild(lblPrivateMessaging);
             lblPrivateMessaging.CenterOnParent();
@@ -240,7 +240,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             tabControl.ClientRectangle = new Rectangle(60, 50, 0, 0);
             tabControl.ClickSound = new EnhancedSoundEffect("button.wav");
             tabControl.FontIndex = 1;
-            tabControl.AddTab("信息", 160);
+            tabControl.AddTab("私信", 160);
             tabControl.AddTab("好友列表", 160);
             tabControl.AddTab("所有玩家", 160);
             tabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
@@ -266,7 +266,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             lblMessages.ClientRectangle = new Rectangle(lbUserList.Right + 12,
                 lblPlayers.Y, 0, 0);
             lblMessages.FontIndex = 1;
-            lblMessages.Text = "信息：";
+            lblMessages.Text = "私信：";
 
             lbMessages = new ChatListBox(WindowManager);
             lbMessages.Name = "lbMessages";

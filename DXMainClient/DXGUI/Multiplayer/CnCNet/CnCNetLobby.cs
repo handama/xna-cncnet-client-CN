@@ -167,7 +167,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
                 PerformUserListContextMenuAction(iu => pmWindow.InitPM(iu.Name)));
             playerContextMenu.AddItem("添加好友", () => 
                 PerformUserListContextMenuAction(iu => ToggleFriend(iu.Name)));
-            playerContextMenu.AddItem("忽略用户", () => 
+            playerContextMenu.AddItem("屏蔽用户", () => 
                 PerformUserListContextMenuAction(iu => ToggleIgnoreUser(iu.Ident)));
 
             lbChatMessages = new ChatListBox(WindowManager);
@@ -490,7 +490,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             bool isAdmin = currentChatChannel.Users[lbPlayerList.SelectedIndex].IsAdmin;
 
             playerContextMenu.Items[1].Text = cncnetUserData.IsFriend(ircUser.Name) ? "删除好友" : "添加好友";
-            playerContextMenu.Items[2].Text = cncnetUserData.IsIgnored(ircUser.Ident) && !isAdmin ? "解除屏蔽" : "屏蔽";
+            playerContextMenu.Items[2].Text = cncnetUserData.IsIgnored(ircUser.Ident) && !isAdmin ? "解除屏蔽" : "屏蔽用户";
             playerContextMenu.Items[2].Selectable = !isAdmin;
 
             playerContextMenu.Open(GetCursorPoint());
@@ -1107,7 +1107,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
         {
             if (!string.IsNullOrEmpty(message.SenderIdent) && cncnetUserData.IsIgnored(message.SenderIdent) && !message.SenderIsAdmin)
             {
-                lbChatMessages.AddMessage(new ChatMessage(Color.Silver, "邮件被" + message.SenderName + "阻止。"));
+                lbChatMessages.AddMessage(new ChatMessage(Color.Silver, "私信被" + message.SenderName + "屏蔽了。"));
             }
             else
             {

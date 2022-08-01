@@ -25,8 +25,10 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
             SelectedIndexChanged += TunnelListBox_SelectedIndexChanged;
 
+            int headerHeight = (int)Renderer.GetTextDimensions("Name", HeaderFontIndex).Y;
+
             Width = 466;
-            Height = 200;
+            Height = LineHeight * 12 + headerHeight + 3;
             PanelBackgroundDrawMode = PanelBackgroundImageDrawMode.STRETCHED;
             BackgroundTexture = AssetLoader.CreateTexture(new Color(0, 0, 0, 128), 1, 1);
             AddColumn("名称", 230);
@@ -63,11 +65,19 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             }
         }
 
+        /// <summary>
+        /// Gets whether or not a tunnel from the list with the given address is selected.
+        /// </summary>
+        /// <param name="address">The address of the tunnel server</param>
+        /// <returns>True if tunnel with given address is selected, otherwise false.</returns>
+        public bool IsTunnelSelected(string address) =>
+            tunnelHandler.Tunnels.FindIndex(t => t.Address == address) == SelectedIndex;
+
         private void TunnelHandler_TunnelsRefreshed(object sender, EventArgs e)
         {
             ClearItems();
 
-            int tunnelIndex = 0;
+            lowestTunnelRating = int.MaxValue;
 
             foreach (CnCNetTunnel tunnel in tunnelHandler.Tunnels)
             {
@@ -83,44 +93,37 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
                 AddItem(info, true);
 
-                if ((tunnel.Official || tunnel.Recommended || tunnel.CNServer) && tunnel.PingInMs > -1)
-                {
-                    int rating = GetTunnelRating(tunnel);
-                    if (rating < lowestTunnelRating)
-                    {
-                        bestTunnelIndex = tunnelIndex;
-                        lowestTunnelRating = rating;
-                    }
-                }
-
-                tunnelIndex++;
+               
             }
 
             if (tunnelHandler.Tunnels.Count > 0)
             {
-                if (!isManuallySelectedTunnel)
-                {
-                    SelectedIndex = bestTunnelIndex;
-                    isManuallySelectedTunnel = false;
-                }
-                else
+                if (isManuallySelectedTunnel)
                 {
                     int manuallySelectedIndex = tunnelHandler.Tunnels.FindIndex(t => t.Address == manuallySelectedTunnelAddress);
 
                     if (manuallySelectedIndex == -1)
                     {
-                        SelectedIndex = bestTunnelIndex;
+                        SelectedIndex = -1;
                         isManuallySelectedTunnel = false;
                     }
                     else
-                        SelectedIndex = manuallySelectedIndex;
+                    {
+                        CnCNetTunnel tunnel = tunnelHandler.Tunnels[manuallySelectedIndex];
+
+                        if (tunnel.Clients >= tunnel.MaxClients)
+                        {
+                            SelectedIndex = -1;
+                            isManuallySelectedTunnel = false;
+                        }
+                    }
                 }
             }
 
             ListRefreshed?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TunnelHandler_TunnelPinged(int tunnelIndex)
+        public void TunnelHandler_TunnelPinged(int tunnelIndex)
         {
             XNAListBoxItem lbItem = GetItem(2, tunnelIndex);
             CnCNetTunnel tunnel = tunnelHandler.Tunnels[tunnelIndex];
@@ -128,33 +131,24 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             if (tunnel.PingInMs == -1)
                 lbItem.Text = "未知";
             else
-            {
                 lbItem.Text = tunnel.PingInMs + " ms";
-                int rating = GetTunnelRating(tunnel);
 
-                if (isManuallySelectedTunnel)
-                    return;
+            if (tunnel.Rating < lowestTunnelRating)
+            {
+                bestTunnelIndex = tunnelIndex;
+                lowestTunnelRating = tunnel.Rating;
 
-                if ((tunnel.Recommended || tunnel.Official || tunnel.CNServer) && rating < lowestTunnelRating)
+
+
+                if (!isManuallySelectedTunnel || tunnel.Clients >= tunnel.MaxClients)
                 {
-                    bestTunnelIndex = tunnelIndex;
-                    lowestTunnelRating = rating;
                     SelectedIndex = tunnelIndex;
+                    isManuallySelectedTunnel = false;
                 }
             }
         }
 
-        private int GetTunnelRating(CnCNetTunnel tunnel)
-        {
-            double usageRatio = (double)tunnel.Clients / tunnel.MaxClients;
-
-            if (usageRatio == 0)
-                usageRatio = 0.1;
-
-            usageRatio *= 100.0;
-
-            return Convert.ToInt32(Math.Pow(tunnel.PingInMs, 2.0) * usageRatio);
-        }
+     
 
         private void TunnelListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
