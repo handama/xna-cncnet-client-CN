@@ -118,7 +118,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             btnChangeTunnel.Name = nameof(btnChangeTunnel);
             btnChangeTunnel.ClientRectangle = new Rectangle(btnLeaveGame.Right - btnLeaveGame.Width - 145,
                 btnLeaveGame.Y, 133, 23);
-            btnChangeTunnel.Text = "Change Tunnel";
+            btnChangeTunnel.Text = "切换隧道";
             btnChangeTunnel.LeftClick += BtnChangeTunnel_LeftClick;
             AddChild(btnChangeTunnel);
 

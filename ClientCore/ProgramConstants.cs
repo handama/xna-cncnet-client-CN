@@ -22,8 +22,8 @@ namespace ClientCore
 
         public const string QRES_EXECUTABLE = "qres.dat";
 
-        public const string CNCNET_PROTOCOL_REVISION = "R7";
-        public const string LAN_PROTOCOL_REVISION = "RL5";
+        public const string CNCNET_PROTOCOL_REVISION = "R9";
+        public const string LAN_PROTOCOL_REVISION = "RL6";
         public const int LAN_PORT = 1234;
         public const int LAN_INGAME_PORT = 1234;
         public const int LAN_LOBBY_PORT = 1232;
@@ -42,7 +42,7 @@ namespace ClientCore
 
         public static readonly Encoding LAN_ENCODING = Encoding.UTF8;
 
-        public static string GAME_VERSION = "1.15";
+        public static string GAME_VERSION = "Undefined";
         private static string PlayerName = "No name";
 
         public static string PLAYERNAME
