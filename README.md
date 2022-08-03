@@ -20,6 +20,7 @@ The MonoGame / XNA CnCNet client, a platform for playing classic Command & Conqu
 * 根据地图玩家数量和作者筛选地图
 * 显示玩家延迟
 * 自定义游戏分辨率
+* 优化随机选择地图
 
 Targets
 -------
