@@ -698,16 +698,50 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             Logger.Log("PickRandomMap: Rolled " + random + " out of " + maps.Count + ". Picked map: " + Map.Name);
 
             ChangeMap(GameMode, Map);
-            tbMapSearch.Text = string.Empty;
-            tbMapSearch.OnSelectedChanged();
+            //tbMapSearch.Text = string.Empty;
+            //tbMapSearch.OnSelectedChanged();
             
             ListMaps();
         }
 
         private List<Map> GetMapList(int playerCount)
         {
-            List<Map> mapList = new List<Map>(GameMode.Maps.Where(x => x.MaxPlayers == playerCount));
-            if (mapList.Count < 1 && playerCount <= MAX_PLAYER_COUNT)
+            List<Map> mapList = new List<Map>();
+            for (int i = 0; i < GameMode.Maps.Count; i++)
+            {
+                if (tbMapSearch.Text != tbMapSearch.Suggestion)
+                {
+                    if (!GameMode.Maps[i].Name.ToUpper().Contains(tbMapSearch.Text.ToUpper()))
+                    {
+                        continue;
+                    }
+                }
+
+                if (!ddplayerNumbers.SelectedItem.Text.Contains("-"))
+                {
+                    if (GameMode.Maps[i].MaxPlayers != int.Parse(ddplayerNumbers.SelectedItem.Text))
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    if (GameMode.Maps[i].MaxPlayers != playerCount)
+                    {
+                        continue;
+                    }
+                }
+                if (!ddAuthor.SelectedItem.Text.Contains("-"))
+                {
+                    if (!GameMode.Maps[i].Author.Contains(ddAuthor.SelectedItem.Text))
+                    {
+                        continue;
+                    }
+                }
+                mapList.Add(GameMode.Maps[i]);
+            }
+
+            if (mapList.Count < 1 && playerCount <= MAX_PLAYER_COUNT && ddplayerNumbers.SelectedItem.Text.Contains("-"))
                 return GetMapList(playerCount + 1);
             else
                 return mapList;
