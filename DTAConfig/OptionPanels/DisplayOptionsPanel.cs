@@ -34,6 +34,11 @@ namespace DTAConfig.OptionPanels
         private XNAClientPreferredItemDropDown ddClientResolution;
         private XNAClientCheckBox chkBorderlessClient;
         private XNAClientDropDown ddClientTheme;
+        private XNAClientCheckBox chkCustomIngameResolution;
+        protected XNATextBox tbIngameResolutionX;
+        protected XNATextBox tbIngameResolutionY;
+        protected XNALabel lblCustomIngameResolution;
+
 
         private List<DirectDrawWrapper> renderers;
 
@@ -65,6 +70,26 @@ namespace DTAConfig.OptionPanels
             lblIngameResolution.ClientRectangle = new Rectangle(12, 14, 0, 0);
             lblIngameResolution.Text = "游戏分辨率：";
 
+            tbIngameResolutionX = new XNATextBox(WindowManager);
+            tbIngameResolutionX.Name = "tbIngameResolutionX";
+            tbIngameResolutionX.ClientRectangle = new Rectangle(
+                lblIngameResolution.Right + 3,
+                lblIngameResolution.Y - 2, 69, 22);
+            tbIngameResolutionX.Disable();
+
+            lblCustomIngameResolution = new XNALabel(WindowManager);
+            lblCustomIngameResolution.Name = "lblCustomIngameResolution";
+            lblCustomIngameResolution.ClientRectangle = new Rectangle(lblIngameResolution.Right + 80, lblIngameResolution.Y , 0, 0);
+            lblCustomIngameResolution.Text = "x";
+            lblCustomIngameResolution.Disable();
+
+            tbIngameResolutionY = new XNATextBox(WindowManager);
+            tbIngameResolutionY.Name = "tbIngameResolutionY";
+            tbIngameResolutionY.ClientRectangle = new Rectangle(
+                lblCustomIngameResolution.Right + 7,
+                lblIngameResolution.Y - 2, 69, 22);
+            tbIngameResolutionY.Disable();
+
             ddIngameResolution = new XNAClientDropDown(WindowManager);
             ddIngameResolution.Name = "ddIngameResolution";
             ddIngameResolution.ClientRectangle = new Rectangle(
@@ -82,10 +107,18 @@ namespace DTAConfig.OptionPanels
             foreach (var res in resolutions)
                 ddIngameResolution.AddItem(res.ToString());
 
+            chkCustomIngameResolution = new XNAClientCheckBox(WindowManager);
+            chkCustomIngameResolution.Name = "chkCustomIngameResolution";
+            chkCustomIngameResolution.ClientRectangle = new Rectangle(lblIngameResolution.X,
+                ddIngameResolution.Bottom + 10, 0, 0);
+            chkCustomIngameResolution.Text = "自定义分辨率";
+            chkCustomIngameResolution.CheckedChanged += ChkCustomIngameResolution_CheckedChanged;
+            chkCustomIngameResolution.Checked = false;
+
             var  lblDetailLevel = new XNALabel(WindowManager);
             lblDetailLevel.Name = "lblDetailLevel";
             lblDetailLevel.ClientRectangle = new Rectangle(lblIngameResolution.X,
-                ddIngameResolution.Bottom + 16, 0, 0);
+                chkCustomIngameResolution.Bottom + 29, 0, 0);
             lblDetailLevel.Text = "清晰度：";
 
             ddDetailLevel = new XNAClientDropDown(WindowManager);
@@ -216,7 +249,7 @@ namespace DTAConfig.OptionPanels
             chkBorderlessClient.Name = "chkBorderlessClient";
             chkBorderlessClient.ClientRectangle = new Rectangle(
                 lblClientResolution.X,
-                lblDetailLevel.Y, 0, 0);
+                lblClientResolution.Bottom + 10, 0, 0);
             chkBorderlessClient.Text = "客户端全屏";
             chkBorderlessClient.CheckedChanged += ChkBorderlessMenu_CheckedChanged;
             chkBorderlessClient.Checked = true;
@@ -225,7 +258,7 @@ namespace DTAConfig.OptionPanels
             lblClientTheme.Name = "lblClientTheme";
             lblClientTheme.ClientRectangle = new Rectangle(
                 lblClientResolution.X,
-                lblRenderer.Y, 0, 0);
+                chkBorderlessClient.Bottom +29, 0, 0);
             lblClientTheme.Text = "客户端主题：";
 
             ddClientTheme = new XNAClientDropDown(WindowManager);
@@ -293,6 +326,7 @@ namespace DTAConfig.OptionPanels
             AddChild(chkBorderlessWindowedMode);
             AddChild(chkBackBufferInVRAM);
             AddChild(chkBorderlessClient);
+            AddChild(chkCustomIngameResolution);
             AddChild(lblClientTheme);
             AddChild(ddClientTheme);
             AddChild(lblClientResolution);
@@ -303,6 +337,9 @@ namespace DTAConfig.OptionPanels
             AddChild(ddDetailLevel);
             AddChild(lblIngameResolution);
             AddChild(ddIngameResolution);
+            AddChild(lblCustomIngameResolution);
+            AddChild(tbIngameResolutionX);
+            AddChild(tbIngameResolutionY);
         }
 
         /// <summary>
@@ -537,7 +574,29 @@ namespace DTAConfig.OptionPanels
         }
 
 #endif
+        
 
+        private void ChkCustomIngameResolution_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkCustomIngameResolution.Checked)
+            {
+                ddIngameResolution.AllowDropDown = false;
+                ddIngameResolution.Disable();
+                lblCustomIngameResolution.Enable();
+                tbIngameResolutionX.Enable();
+                tbIngameResolutionX.Text = UserINISettings.Instance.IngameScreenWidth.Value.ToString();
+                tbIngameResolutionY.Enable();
+                tbIngameResolutionY.Text = UserINISettings.Instance.IngameScreenHeight.Value.ToString();
+            }
+            else
+            {
+                lblCustomIngameResolution.Disable();
+                tbIngameResolutionX.Disable();
+                tbIngameResolutionY.Disable();
+                ddIngameResolution.AllowDropDown = true;
+                ddIngameResolution.Enable();
+            }
+        }
         private void ChkBorderlessMenu_CheckedChanged(object sender, EventArgs e)
         {
             if (chkBorderlessClient.Checked)
@@ -625,12 +684,34 @@ namespace DTAConfig.OptionPanels
             LoadRenderer();
             ddDetailLevel.SelectedIndex = UserINISettings.Instance.DetailLevel;
 
-            string currentRes = UserINISettings.Instance.IngameScreenWidth.Value +
-                "x" + UserINISettings.Instance.IngameScreenHeight.Value;
+            if (IniSettings.CustonIngameResolution.Value)
+            {
+                chkCustomIngameResolution.Checked = true;
 
-            int index = ddIngameResolution.Items.FindIndex(i => i.Text == currentRes);
+                int closestIndex = 0;
+                int minDiff = int.MaxValue;
+                for (int i = 0; i < ddIngameResolution.Items.Count; i++)
+                {
+                    int x = int.Parse(ddIngameResolution.Items[i].Text.Split('x')[0]);
+                    int y = int.Parse(ddIngameResolution.Items[i].Text.Split('x')[1]);
+                    int diff = Math.Abs(UserINISettings.Instance.IngameScreenWidth.Value + UserINISettings.Instance.IngameScreenHeight.Value - x - y);
+                    if (diff < minDiff)
+                    {
+                        minDiff = diff;
+                        closestIndex = i;
+                    }
+                }
+                ddIngameResolution.SelectedIndex = closestIndex;
+            }
+            else
+            {
+                string currentRes = UserINISettings.Instance.IngameScreenWidth.Value +
+                    "x" + UserINISettings.Instance.IngameScreenHeight.Value;
 
-            ddIngameResolution.SelectedIndex = index > -1 ? index : 0;
+                int index = ddIngameResolution.Items.FindIndex(i => i.Text == currentRes);
+
+                ddIngameResolution.SelectedIndex = index > -1 ? index : 0;
+            }
 
             // Wonder what this "Win8CompatMode" actually does..
             // Disabling it used to be TS-DDRAW only, but it was never enabled after 
@@ -732,9 +813,19 @@ namespace DTAConfig.OptionPanels
 
             IniSettings.DetailLevel.Value = ddDetailLevel.SelectedIndex;
 
-            string[] resolution = ddIngameResolution.SelectedItem.Text.Split('x');
+            int[] ingameRes = new int[2];
+            if (chkCustomIngameResolution.Checked)
+            {
+                ingameRes = new int[2] { int.Parse(tbIngameResolutionX.Text), int.Parse(tbIngameResolutionY.Text) };
+                IniSettings.CustonIngameResolution.Value = true;
+            }
+            else
+            {
+                IniSettings.CustonIngameResolution.Value = false;
+                string[] resolution = ddIngameResolution.SelectedItem.Text.Split('x');
+                ingameRes = new int[2] { int.Parse(resolution[0]), int.Parse(resolution[1]) };
+            }
 
-            int[] ingameRes = new int[2] { int.Parse(resolution[0]), int.Parse(resolution[1]) };
 
             IniSettings.IngameScreenWidth.Value = ingameRes[0];
             IniSettings.IngameScreenHeight.Value = ingameRes[1];
