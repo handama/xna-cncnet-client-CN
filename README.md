@@ -15,6 +15,11 @@ The MonoGame / XNA CnCNet client, a platform for playing classic Command & Conqu
 * 每张地图可自定义是否使用客户端随机位置
 * 设置中自定义命令行参数
 * 自动为dev版phobos添加命令行参数
+* 自动选择隧道服务器
+* 自动选择cncnet IRC服务器
+* 根据地图玩家数量和作者筛选地图
+* 显示玩家延迟
+* 自定义游戏分辨率
 
 Targets
 -------
