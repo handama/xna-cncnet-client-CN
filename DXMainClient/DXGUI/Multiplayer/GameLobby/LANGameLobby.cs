@@ -969,7 +969,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             if (gm == null)
             {
                 AddNotice("房主选择了一张你没有的地图。" +
-                    "房主需要更换地图，否则你无法游戏。");
+                    "房主需要更换地图，否则你无法参加游戏。");
                 ChangeMap(null, null);
                 return;
             }
@@ -979,7 +979,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             if (map == null)
             {
                 AddNotice("房主选择了一张你没有的地图。" +
-                    "房主需要更换地图，否则你无法游戏。");
+                    "房主需要更换地图，否则你无法参加游戏。");
                 ChangeMap(null, null);
                 return;
             }

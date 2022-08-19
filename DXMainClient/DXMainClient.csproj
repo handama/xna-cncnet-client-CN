@@ -347,6 +347,7 @@
     <Compile Include="DXGUI\Multiplayer\GameLobby\DropDownDataWriteMode.cs" />
     <Compile Include="DXGUI\Multiplayer\GameLobby\GameLaunchButton.cs" />
     <Compile Include="DXGUI\Multiplayer\GameLobby\GameLobbyBase.cs" />
+    <Compile Include="DXGUI\Multiplayer\GameLobby\RandomMapWindow.cs" />
     <Compile Include="DXGUI\Multiplayer\GameLobby\GameLobbyCheckBox.cs" />
     <Compile Include="DXGUI\Multiplayer\GameLobby\GameLobbyDropDown.cs" />
     <Compile Include="DXGUI\Multiplayer\GameLobby\CommandHandlers\IntCommandHandler.cs" />

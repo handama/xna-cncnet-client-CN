@@ -10,6 +10,7 @@ using ClientGUI;
 using Rampastring.Tools;
 using System.IO;
 using DTAClient.Domain;
+using System.Diagnostics;
 
 namespace DTAClient.DXGUI.Multiplayer.GameLobby
 {
@@ -17,13 +18,16 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
     {
         private const string SETTINGS_PATH = "Client\\SkirmishSettings.ini";
 
-        public SkirmishLobby(WindowManager windowManager, TopBar topBar, List<GameMode> GameModes, DiscordHandler discordHandler)
+        public SkirmishLobby(WindowManager windowManager, TopBar topBar, List<GameMode> GameModes, MapLoader mapLoader , DiscordHandler discordHandler)
             : base(windowManager, "SkirmishLobby", GameModes, false, discordHandler)
         {
             this.topBar = topBar;
+            MapLoader = mapLoader;
         }
 
         public event EventHandler Exited;
+
+        protected MapLoader MapLoader;
 
         TopBar topBar;
 
@@ -37,6 +41,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             InitPlayerOptionDropdowns();
 
             btnLeaveGame.Text = "主菜单";
+
+            randomMapWindow.btnGenerateMap.LeftClick += BtnGenerateMap_LeftClick;
 
             //MapPreviewBox.EnableContextMenu = true;
 
@@ -57,6 +63,35 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             ProgramConstants.PlayerNameChanged += ProgramConstants_PlayerNameChanged;
             ddPlayerSides[0].SelectedIndexChanged += PlayerSideChanged;
+        }
+
+        public override void BtnGenerateMap_LeftClick(object sender, EventArgs e)
+        {
+            base.BtnGenerateMap_LeftClick(sender, e);
+
+            LoadCustomMap(RandomMapName + ".map");
+
+            //mapLoader.LoadCustomMapManual($"Maps\\{ClientConfiguration.Instance.CustomMapFolderName}\\{name}.map", out string resultMessage);
+            //MapName = name + ".map";
+
+        }
+
+        private void LoadCustomMap(string mapName)
+        {
+            Map map = MapLoader.LoadCustomMapManual($"Maps\\{ClientConfiguration.Instance.CustomMapFolderName}\\{mapName}", out string resultMessage);
+
+            foreach (var gm in GameModes)
+            {
+                foreach (var thisGm in map.GameModes)
+                {
+                    if (gm.Name == thisGm)
+                    {
+                        ChangeMap(gm, map);
+                    }
+                }
+            }
+
+            ListMaps();
         }
 
         protected override void OnEnabledChanged(object sender, EventArgs args)

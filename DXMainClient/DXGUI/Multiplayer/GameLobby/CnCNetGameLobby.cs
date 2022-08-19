@@ -17,6 +17,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DTAClient.Domain.Multiplayer.CnCNet;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace DTAClient.DXGUI.Multiplayer.GameLobby
 {
@@ -1102,7 +1104,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             {
                 AddNotice("房主选择了一张你没有的地图。" +
                     "因为你禁止了地图共享，所以无法传输。" +
-                    "房主需要更换地图，否则你无法游戏。");
+                    "房主需要更换地图，否则你无法参加游戏。");
                 channel.SendCTCPMessage(MAP_SHARING_DISABLED_MESSAGE, QueuedMessageType.SYSTEM_MESSAGE, 9);
             }
         }
@@ -1111,7 +1113,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         {
             AddNotice("房主选择了一张你没有的官方地图。" +
                 "这可能意味着房主修改了文件，或者与你的版本不同。" +
-                "房主需要更换地图，否则你无法游戏。");
+                "房主需要更换地图，否则你无法参加游戏。");
             channel.SendCTCPMessage(MAP_SHARING_FAIL_MESSAGE + " " + sha1, QueuedMessageType.SYSTEM_MESSAGE, 9);
         }
 
@@ -1573,6 +1575,17 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             {
                 channel.SendCTCPMessage(MAP_SHARING_DOWNLOAD_REQUEST + " " + Map.SHA1, QueuedMessageType.SYSTEM_MESSAGE, 9);
             }
+
+            Task task = new Task(
+                () =>
+                {
+                    Thread.Sleep(2000);
+                    ChangeMap(GameMode, Map);
+                }
+                );
+
+            task.Start();
+
         }
 
         /// <summary>

@@ -15,7 +15,6 @@ if errorlevel 1 goto error
 call CopyCompiled
 
 echo Compiling complete.
-pause
 
 goto end
 

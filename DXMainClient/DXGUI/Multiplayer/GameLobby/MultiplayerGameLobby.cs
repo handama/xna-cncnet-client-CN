@@ -14,6 +14,7 @@ using ClientGUI;
 using System.Text;
 using DTAClient.Domain;
 using Microsoft.Xna.Framework.Graphics;
+using System.Diagnostics;
 
 namespace DTAClient.DXGUI.Multiplayer.GameLobby
 {
@@ -208,6 +209,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             MapPreviewBox.LocalStartingLocationSelected += MapPreviewBox_LocalStartingLocationSelected;
             MapPreviewBox.StartingLocationApplied += MapPreviewBox_StartingLocationApplied;
 
+            randomMapWindow.btnGenerateMap.LeftClick += BtnGenerateMap_LeftClick;
+
             sndJoinSound = new EnhancedSoundEffect("joingame.wav");
             sndLeaveSound = new EnhancedSoundEffect("leavegame.wav");
             sndMessageSound = new EnhancedSoundEffect("message.wav");
@@ -224,6 +227,17 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 Logger.Log("MultiplayerGameLobby: Saved games are not available!");
         }
 
+
+        public override void BtnGenerateMap_LeftClick(object sender, EventArgs e)
+        {
+            AddNotice("正在生成随机地图...");
+            base.BtnGenerateMap_LeftClick(sender, e);
+
+            AddNotice($"随机地图{RandomMapName}已成功生成。");
+            LoadCustomMap(RandomMapName + ".map");
+
+
+        }
         /// <summary>
         /// Performs initialization that is necessary after derived 
         /// classes have performed their own initialization.
@@ -530,6 +544,19 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 AddNotice(resultMessage);
             else
                 AddNotice(resultMessage, Color.Red);
+
+            foreach (var gm in GameModes)
+            {
+                foreach (var thisGm in map.GameModes)
+                {
+                    if (gm.Name == thisGm)
+                    {
+                        ChangeMap(gm, map);
+                    }
+                }
+            }
+
+            ListMaps();
         }
 
         /// <summary>
@@ -632,6 +659,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 lblAuthor.Enable();
                 ddAuthor.Enable();
                 ddplayerNumbers.Enable();
+                btnCreateRandomMap.Enable();
 
                 foreach (GameLobbyDropDown dd in DropDowns)
                 {
@@ -655,6 +683,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 lblAuthor.Disable();
                 ddAuthor.Disable();
                 ddplayerNumbers.Disable();
+                btnCreateRandomMap.Disable();
 
                 btnLockGame.Enabled = false;
                 btnLockGame.Visible = false;

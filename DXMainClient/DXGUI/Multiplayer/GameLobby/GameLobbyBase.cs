@@ -11,6 +11,7 @@ using Rampastring.XNAUI;
 using Rampastring.XNAUI.XNAControls;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -101,6 +102,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         protected List<GameLobbyCheckBox> CheckBoxes = new List<GameLobbyCheckBox>();
         protected List<GameLobbyDropDown> DropDowns = new List<GameLobbyDropDown>();
 
+        
 
         protected DiscordHandler discordHandler;
 
@@ -178,6 +180,10 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         protected List<PlayerInfo> Players = new List<PlayerInfo>();
         protected List<PlayerInfo> AIPlayers = new List<PlayerInfo>();
 
+        protected XNAClientButton btnCreateRandomMap;
+        protected RandomMapWindow randomMapWindow;
+
+
         protected virtual PlayerInfo FindLocalPlayer() => Players.Find(p => p.Name == ProgramConstants.PLAYERNAME);
         protected bool PlayerUpdatingInProgress { get; set; }
 
@@ -196,6 +202,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         protected int RandomSelectorCount { get; private set; } = 1;
 
         protected List<int[]> RandomSelectors = new List<int[]>();
+
+        protected string RandomMapName;
 
 
 #if YR
@@ -397,6 +405,25 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             ddplayerNumbers.SelectedIndexChanged += MapScreenActived;
             ddplayerNumbers.Tag = true;
 
+
+            btnCreateRandomMap = new XNAClientButton(WindowManager);
+            btnCreateRandomMap.Name = "btnCreateRandomMap";
+            btnCreateRandomMap.ClientRectangle = new Rectangle(btnLeaveGame.Right - btnLeaveGame.Width - 145,
+                btnLeaveGame.Y, 133, 23);
+            btnCreateRandomMap.Text = "创建随机地图";
+            btnCreateRandomMap.LeftClick += BtnCreateRandomMap_LeftClick;
+            AddChild(btnCreateRandomMap);
+            btnCreateRandomMap.Visible = false;
+
+            randomMapWindow = new RandomMapWindow(WindowManager);
+            randomMapWindow.Initialize();
+            randomMapWindow.DrawOrder = 1;
+            randomMapWindow.UpdateOrder = 1;
+            DarkeningPanel.AddAndInitializeWithControl(WindowManager, randomMapWindow);
+            randomMapWindow.CenterOnParent();
+            randomMapWindow.Disable();
+           
+
             AddChild(ddplayerNumbers);
             
 
@@ -479,6 +506,13 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             AddChild(btnPickRandomMap);
         }
 
+        private void BtnCreateRandomMap_LeftClick(object sender, EventArgs e) => ShowRandomMapWindow();
+
+        private void ShowRandomMapWindow()
+        {
+            randomMapWindow.Open();
+        }
+
         private void BtnPickRandomMap_LeftClick(object sender, EventArgs e)
         {
             PickRandomMap();
@@ -545,7 +579,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 ChangeMap(GameMode, Map);
         }
 
-        private void ListMaps()
+        protected void ListMaps()
         {
             lbMapList.SelectedIndexChanged -= LbMapList_SelectedIndexChanged;
 
@@ -622,6 +656,57 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             }
 
             lbMapList.SelectedIndexChanged += LbMapList_SelectedIndexChanged;
+        }
+
+        protected void ListMapsGuest()
+        {
+
+            lbMapList.ClearItems();
+            lbMapList.SetTopIndex(0);
+
+            lbMapList.SelectedIndex = -1;
+
+            int mapIndex = -1;
+            int skippedMapsCount = 0;
+
+            for (int i = 0; i < GameMode.Maps.Count; i++)
+            {
+
+                XNAListBoxItem rankItem = new XNAListBoxItem();
+                if (GameMode.Maps[i].IsCoop)
+                {
+                    if (StatisticsManager.Instance.HasBeatCoOpMap(GameMode.Maps[i].Name, GameMode.UIName))
+                        rankItem.Texture = RankTextures[Math.Abs(2 - GameMode.CoopDifficultyLevel) + 1];
+                    else
+                        rankItem.Texture = RankTextures[0];
+                }
+                else
+                    rankItem.Texture = RankTextures[GetDefaultMapRankIndex(GameMode.Maps[i]) + 1];
+
+                XNAListBoxItem mapNameItem = new XNAListBoxItem();
+                mapNameItem.Text = Renderer.GetSafeString(GameMode.Maps[i].Name, lbMapList.FontIndex);
+                if ((GameMode.Maps[i].MultiplayerOnly || GameMode.MultiplayerOnly) && !isMultiplayer)
+                    mapNameItem.TextColor = UISettings.ActiveSettings.DisabledItemColor;
+                mapNameItem.Tag = GameMode.Maps[i];
+
+                XNAListBoxItem[] mapInfoArray = new XNAListBoxItem[]
+                {
+                    rankItem,
+                    mapNameItem,
+                };
+
+                lbMapList.AddItem(mapInfoArray);
+
+                if (GameMode.Maps[i] == Map)
+                    mapIndex = i - skippedMapsCount;
+            }
+
+            if (mapIndex > -1)
+            {
+                lbMapList.SelectedIndex = mapIndex;
+                while (mapIndex > lbMapList.LastIndex)
+                    lbMapList.TopIndex++;
+            }
         }
 
         protected abstract int GetDefaultMapRankIndex(Map map);
@@ -702,6 +787,67 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             //tbMapSearch.OnSelectedChanged();
             
             ListMaps();
+        }
+
+        public virtual void BtnGenerateMap_LeftClick(object sender, EventArgs e)
+        {
+            var random = new Random();
+            RandomMapName = "Random Map 01";
+            int i = 1;
+            while (File.Exists($"Maps\\{ClientConfiguration.Instance.CustomMapFolderName}\\{RandomMapName}.map"))
+            {
+                RandomMapName = "Random Map" + string.Format(" {0:D2}", i);
+                i++;
+            }
+
+            int width = 0;
+            int height = 0;
+            int totalPlayer = 0;
+            foreach (var player in randomMapWindow.ddPlayers)
+            {
+                totalPlayer += player.SelectedIndex;
+            }
+
+            if (randomMapWindow.ddMapSize.SelectedIndex == 0)
+            {
+                width = random.Next(95 + totalPlayer * 12, 110 + totalPlayer * 12);
+                height = random.Next(95 + totalPlayer * 12, 110 + totalPlayer * 12);
+            }
+            else if (randomMapWindow.ddMapSize.SelectedIndex == 1)
+            {
+                width = random.Next(80 + totalPlayer * 12, 100 + totalPlayer * 12);
+                height = random.Next(80 + totalPlayer * 12, 100 + totalPlayer * 12);
+            }
+            else if (randomMapWindow.ddMapSize.SelectedIndex == 2)
+            {
+                width = random.Next(65 + totalPlayer * 12, 80 + totalPlayer * 12);
+                height = random.Next(65 + totalPlayer * 12, 80 + totalPlayer * 12);
+            }
+            else if (randomMapWindow.ddMapSize.SelectedIndex == 3)
+            {
+                width = random.Next(50 + totalPlayer * 12, 65 + totalPlayer * 12);
+                height = random.Next(50 + totalPlayer * 12, 65 + totalPlayer * 12);
+            }
+            string size = $"-w {width} -h {height}";
+            string playerLocation = $" --nwp {randomMapWindow.ddPlayerNW.SelectedIndex} --np {randomMapWindow.ddPlayerN.SelectedIndex} --nep {randomMapWindow.ddPlayerNE.SelectedIndex} --ep {randomMapWindow.ddPlayerE.SelectedIndex} --sep {randomMapWindow.ddPlayerSE.SelectedIndex} --sp {randomMapWindow.ddPlayerS.SelectedIndex} --swp {randomMapWindow.ddPlayerSW.SelectedIndex} --wp {randomMapWindow.ddPlayerW.SelectedIndex}";
+            string damaged = "";
+            if (randomMapWindow.chkDamagedBuilding.Checked)
+                damaged = " -d -s 0.02";
+            string thumbnail = "";
+            if (!randomMapWindow.chkNoThumbnail.Checked)
+                thumbnail = " --no-thumbnail-output";
+            else
+                thumbnail = " --no-thumbnail";
+
+            Process RandomMapGenerator = new Process();
+            RandomMapGenerator.StartInfo.FileName = RandomMapWindow.GeneratorPath + "RandomMapGenerator.exe";
+            RandomMapGenerator.StartInfo.WorkingDirectory = RandomMapWindow.GeneratorPath;
+            RandomMapGenerator.StartInfo.UseShellExecute = false;
+            RandomMapGenerator.StartInfo.CreateNoWindow = true;
+            RandomMapGenerator.StartInfo.Arguments = $" {size} {playerLocation} {damaged} -n \"{RandomMapName}\" {thumbnail}";
+            RandomMapGenerator.Start();
+            while (!RandomMapGenerator.HasExited) { }
+            randomMapWindow.Disable();
         }
 
         private List<Map> GetMapList(int playerCount)
