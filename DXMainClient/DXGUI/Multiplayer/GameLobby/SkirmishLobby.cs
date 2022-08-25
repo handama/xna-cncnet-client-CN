@@ -80,6 +80,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         {
             Map map = MapLoader.LoadCustomMapManual($"Maps\\{ClientConfiguration.Instance.CustomMapFolderName}\\{mapName}", out string resultMessage);
 
+            if (map == null)
+                return;
+
             foreach (var gm in GameModes)
             {
                 foreach (var thisGm in map.GameModes)

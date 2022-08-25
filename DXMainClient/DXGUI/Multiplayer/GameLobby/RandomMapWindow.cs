@@ -8,6 +8,7 @@ using System.IO;
 using Rampastring.Tools;
 using System.Diagnostics;
 using System.Collections.Generic;
+using Localization;
 
 namespace DTAClient.DXGUI.Multiplayer.GameLobby
 {
@@ -28,6 +29,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         protected XNALabel lblMapSize;
         public XNAClientDropDown ddMapSize;
+
+        protected XNALabel lblMapMode;
+        public XNAClientDropDown ddMapMode;
 
         protected XNALabel lblPlayerLocation;
 
@@ -109,17 +113,48 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             btnCancel.LeftClick += BtnCancel_LeftClick;
 
 
+            lblMapMode = new XNALabel(WindowManager);
+            lblMapMode.Name = "lblMapMode";
+            lblMapMode.ClientRectangle = new Rectangle(12, 45, 0, 0);
+            lblMapMode.FontIndex = 1;
+            lblMapMode.Text = "地形类型：";
+            AddChild(lblMapMode);
+
+
+            ddMapMode = new XNAClientDropDown(WindowManager);
+            ddMapMode.Name = "ddMapMode";
+            ddMapMode.ClientRectangle = new Rectangle(lblMapMode.X + 80, lblMapMode.Y - 4, 110, 21);
+            
+
+            var mapUnitPath = GeneratorPath + "MapUnits";
+            var MapUnitsDir = new DirectoryInfo(mapUnitPath);
+            var dirs = MapUnitsDir.GetDirectories();
+            foreach (var dir in dirs)
+            {
+                ddMapMode.AddItem(dir.Name);
+            }
+            foreach (var item in ddMapMode.Items)
+            {
+                item.Tag = item.Text;
+                item.Text = item.Text.L10N($"UI:RandomMap:{item.Text}");
+            }
+            
+            ddMapMode.AllowDropDown = true;
+            ddMapMode.SelectedIndex = 0;
+            AddChild(ddMapMode);
+
+
             lblMapSize = new XNALabel(WindowManager);
             lblMapSize.Name = "lblMapSize";
-            lblMapSize.ClientRectangle = new Rectangle(12, 45, 0, 0);
+            lblMapSize.ClientRectangle = new Rectangle(ddMapMode.Right + 15, lblMapMode.Y, 0, 0);
             lblMapSize.FontIndex = 1;
-            lblMapSize.Text = "地图尺寸：";
+            lblMapSize.Text = "尺寸：";
             AddChild(lblMapSize);
 
 
             ddMapSize = new XNAClientDropDown(WindowManager);
             ddMapSize.Name = "ddMapSize";
-            ddMapSize.ClientRectangle = new Rectangle(lblMapSize.X + 80, lblMapSize.Y - 4, 50, 21);
+            ddMapSize.ClientRectangle = new Rectangle(lblMapSize.X + 50, lblMapSize.Y - 4, 55, 21);
             ddMapSize.AddItem("巨大");
             ddMapSize.AddItem("大");
             ddMapSize.AddItem("中");
@@ -131,7 +166,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             lblPlayerLocation = new XNALabel(WindowManager);
             lblPlayerLocation.Name = "lblPlayerLocation";
-            lblPlayerLocation.ClientRectangle = new Rectangle(lblMapSize.X, lblMapSize.Y + 30, 0, 0);
+            lblPlayerLocation.ClientRectangle = new Rectangle(lblMapMode.X, lblMapMode.Y + 30, 0, 0);
             lblPlayerLocation.FontIndex = 1;
             lblPlayerLocation.Text = "玩家位置与数量：";
             AddChild(lblPlayerLocation);

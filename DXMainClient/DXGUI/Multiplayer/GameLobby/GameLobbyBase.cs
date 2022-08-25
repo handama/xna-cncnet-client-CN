@@ -803,30 +803,55 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             int width = 0;
             int height = 0;
             int totalPlayer = 0;
+
             foreach (var player in randomMapWindow.ddPlayers)
             {
                 totalPlayer += player.SelectedIndex;
             }
 
+            string mapType = (string)randomMapWindow.ddMapMode.SelectedItem.Tag;
+
+            var settings1 = new IniFile(RandomMapWindow.GeneratorPath + "settings.ini");
+            var workFolder = settings1.GetStringValue("settings", "WorkingFolder", "MapUnits");
+            workFolder = workFolder.EndsWith("\\") ? workFolder : workFolder + "\\";
+            var mapModeFolder = RandomMapWindow.GeneratorPath + workFolder + mapType + "\\";
+
+            var settings = new IniFile(mapModeFolder + "settings.ini"); 
+            int GiganticMapSideLengthMin = int.Parse(settings.GetStringValue("settings", "GiganticMapSideLength", "95,110").Split(',')[0]);
+            int GiganticMapSideLengthMax = int.Parse(settings.GetStringValue("settings", "GiganticMapSideLength", "95,110").Split(',')[1]);
+            int BigMapSideLengthMin = int.Parse(settings.GetStringValue("settings", "BigMapSideLength", "80,100").Split(',')[0]);
+            int BigMapSideLengthMax = int.Parse(settings.GetStringValue("settings", "BigMapSideLength", "80,100").Split(',')[1]);
+            int MediumMapSideLengthMin = int.Parse(settings.GetStringValue("settings", "MediumMapSideLength", "65,80").Split(',')[0]);
+            int MediumMapSideLengthMax = int.Parse(settings.GetStringValue("settings", "MediumMapSideLength", "65,80").Split(',')[1]);
+            int SmallMapSideLengthMin = int.Parse(settings.GetStringValue("settings", "SmallMapSideLength", "50,65").Split(',')[0]);
+            int SmallMapSideLengthMax = int.Parse(settings.GetStringValue("settings", "SmallMapSideLength", "50,65").Split(',')[1]);
+            int playerAddition = settings.GetIntValue("settings", totalPlayer.ToString()+"PlayerAddition", 0);
+            string gamemode = GameMode.Name.ToLower();
+            string gamemodeLine = "";
+            if (gamemode == "standard")
+                gamemodeLine = "standard";
+            else
+                gamemodeLine = "standard," + gamemode;
+
             if (randomMapWindow.ddMapSize.SelectedIndex == 0)
             {
-                width = random.Next(95 + totalPlayer * 12, 110 + totalPlayer * 12);
-                height = random.Next(95 + totalPlayer * 12, 110 + totalPlayer * 12);
+                width = random.Next(GiganticMapSideLengthMin + playerAddition, GiganticMapSideLengthMax + playerAddition);
+                height = random.Next(GiganticMapSideLengthMin + playerAddition, GiganticMapSideLengthMax + playerAddition);
             }
             else if (randomMapWindow.ddMapSize.SelectedIndex == 1)
             {
-                width = random.Next(80 + totalPlayer * 12, 100 + totalPlayer * 12);
-                height = random.Next(80 + totalPlayer * 12, 100 + totalPlayer * 12);
+                width = random.Next(BigMapSideLengthMin + playerAddition, BigMapSideLengthMax + playerAddition);
+                height = random.Next(BigMapSideLengthMin + playerAddition, BigMapSideLengthMax + playerAddition);
             }
             else if (randomMapWindow.ddMapSize.SelectedIndex == 2)
             {
-                width = random.Next(65 + totalPlayer * 12, 80 + totalPlayer * 12);
-                height = random.Next(65 + totalPlayer * 12, 80 + totalPlayer * 12);
+                width = random.Next(MediumMapSideLengthMin + playerAddition, MediumMapSideLengthMax + playerAddition);
+                height = random.Next(MediumMapSideLengthMin + playerAddition, MediumMapSideLengthMax + playerAddition);
             }
             else if (randomMapWindow.ddMapSize.SelectedIndex == 3)
             {
-                width = random.Next(50 + totalPlayer * 12, 65 + totalPlayer * 12);
-                height = random.Next(50 + totalPlayer * 12, 65 + totalPlayer * 12);
+                width = random.Next(SmallMapSideLengthMin + playerAddition, SmallMapSideLengthMax + playerAddition);
+                height = random.Next(SmallMapSideLengthMin + playerAddition, SmallMapSideLengthMax + playerAddition);
             }
             string size = $"-w {width} -h {height}";
             string playerLocation = $" --nwp {randomMapWindow.ddPlayerNW.SelectedIndex} --np {randomMapWindow.ddPlayerN.SelectedIndex} --nep {randomMapWindow.ddPlayerNE.SelectedIndex} --ep {randomMapWindow.ddPlayerE.SelectedIndex} --sep {randomMapWindow.ddPlayerSE.SelectedIndex} --sp {randomMapWindow.ddPlayerS.SelectedIndex} --swp {randomMapWindow.ddPlayerSW.SelectedIndex} --wp {randomMapWindow.ddPlayerW.SelectedIndex}";
@@ -838,13 +863,13 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 thumbnail = " --no-thumbnail-output";
             else
                 thumbnail = " --no-thumbnail";
-
+            
             Process RandomMapGenerator = new Process();
             RandomMapGenerator.StartInfo.FileName = RandomMapWindow.GeneratorPath + "RandomMapGenerator.exe";
             RandomMapGenerator.StartInfo.WorkingDirectory = RandomMapWindow.GeneratorPath;
             RandomMapGenerator.StartInfo.UseShellExecute = false;
             RandomMapGenerator.StartInfo.CreateNoWindow = true;
-            RandomMapGenerator.StartInfo.Arguments = $" {size} {playerLocation} {damaged} -n \"{RandomMapName}\" {thumbnail}";
+            RandomMapGenerator.StartInfo.Arguments = $" {size} {playerLocation} {damaged} -n \"{RandomMapName}\" {thumbnail} -g {gamemodeLine} --type {mapType}";
             RandomMapGenerator.Start();
             while (!RandomMapGenerator.HasExited) { }
             randomMapWindow.Disable();

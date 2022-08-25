@@ -543,7 +543,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             if (map != null)
                 AddNotice(resultMessage);
             else
+            {
                 AddNotice(resultMessage, Color.Red);
+                return;
+            }
+                
 
             foreach (var gm in GameModes)
             {
