@@ -373,7 +373,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             chkNoThumbnail.Name = "chkNoThumbnail";
             chkNoThumbnail.ClientRectangle = new Rectangle(chkDamagedBuilding.X + 110, chkDamagedBuilding.Y, 0, 0);
             chkNoThumbnail.Text = "不渲染缩略图（加快生成）";
-            AddChild(chkNoThumbnail);
+            //AddChild(chkNoThumbnail);
 
             AddChild(btnGenerateMap);
             AddChild(btnCancel);

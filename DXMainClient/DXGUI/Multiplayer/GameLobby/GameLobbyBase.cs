@@ -859,9 +859,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             if (randomMapWindow.chkDamagedBuilding.Checked)
                 damaged = " -d -s 0.02";
             string thumbnail = "";
-            if (!randomMapWindow.chkNoThumbnail.Checked)
+/*            if (!randomMapWindow.chkNoThumbnail.Checked)
                 thumbnail = " --no-thumbnail-output";
-            else
+            else*/
                 thumbnail = " --no-thumbnail";
             
             Process RandomMapGenerator = new Process();
