@@ -1005,7 +1005,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 bool oldValue = chkBox.Checked;
                 chkBox.Checked = Conversions.IntFromString(parts[i], -1) > 0;
 
-                if (chkBox.Checked != oldValue)
+                if (chkBox.Checked != oldValue && chkBox.Visible)
                 {
                     if (chkBox.Checked)
                         AddNotice("房主启用了" + chkBox.Text + "。");

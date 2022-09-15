@@ -1029,7 +1029,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
                     GameLobbyCheckBox checkBox = CheckBoxes[gameOptionIndex];
 
-                    if (checkBox.Checked != boolArray[optionIndex])
+                    if (checkBox.Checked != boolArray[optionIndex] && checkBox.Visible)
                     {
                         if (boolArray[optionIndex])
                             AddNotice("房主启用了" + checkBox.Text + "。");
