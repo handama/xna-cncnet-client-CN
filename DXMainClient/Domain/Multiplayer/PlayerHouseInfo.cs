@@ -6,6 +6,23 @@ namespace DTAClient.Domain.Multiplayer
 {
     public class PlayerHouseInfo
     {
+        /// <summary>
+        /// A side (or, more correctly, house or country depending on the game)
+        /// index that is used in rules file of the game.
+        /// </summary>
+        public int InternalSideIndex
+        {
+            get
+            {
+                if (IsSpectator && !string.IsNullOrEmpty(ClientConfiguration.Instance.SpectatorInternalSideIndex))
+                    return int.Parse(ClientConfiguration.Instance.SpectatorInternalSideIndex);
+
+                if (!string.IsNullOrEmpty(ClientConfiguration.Instance.InternalSideIndices))
+                    return Array.ConvertAll(ClientConfiguration.Instance.InternalSideIndices.Split(','), int.Parse)[SideIndex];
+
+                return SideIndex;
+            }
+        }
         public int SideIndex { get; set; }
         public int ColorIndex { get; set; }
         public int StartingWaypoint { get; set; }

@@ -1586,6 +1586,26 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             task.Start();
 
+            Task task2 = new Task(
+                () =>
+                {
+                    Thread.Sleep(4000);
+                    ChangeMap(GameMode, Map);
+                }
+                );
+
+            task2.Start();
+
+            Task task3 = new Task(
+            () =>
+            {
+                Thread.Sleep(6000);
+                ChangeMap(GameMode, Map);
+            }
+            );
+
+            task3.Start();
+
         }
 
         /// <summary>
