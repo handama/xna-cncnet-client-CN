@@ -6,6 +6,8 @@ using ClientCore;
 using Rampastring.Tools;
 using System.Collections.Generic;
 
+
+
 namespace ClientGUI
 {
     /// <summary>
@@ -41,6 +43,8 @@ namespace ClientGUI
             string gameExecutableName;
             string additionalExecutableName = string.Empty;
 
+            var settings = new IniFile(ClientConfiguration.Instance.SettingsIniName);
+
             if (osVersion == OSVersion.UNIX)
                 gameExecutableName = ClientConfiguration.Instance.UnixGameExecutableName;
             else
@@ -65,8 +69,14 @@ namespace ClientGUI
                     Logger.Log("Phobos is dev version, adding extra command line parameter for the main executive.");
                     PhobosECLP = " " + ProgramConstants.PhobosPrefix + PhobosVersion;
                 }
-
             }
+            
+            if (settings.GetBooleanValue("Options", "LadderMode", false))
+            {
+                gameExecutableName = "gamemd-spawn.exe";
+                additionalExecutableName = " -SPAWN";
+            }
+
             string extraCommandLine = ClientConfiguration.Instance.ExtraExeCommandLineParameters + PhobosECLP;
 
             File.Delete(ProgramConstants.GamePath + "DTA.LOG");

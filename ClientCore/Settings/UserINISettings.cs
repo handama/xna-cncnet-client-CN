@@ -80,6 +80,7 @@ namespace ClientCore
             DragDistance = new IntSetting(iniFile, OPTIONS, "DragDistance", 4);
             DoubleTapInterval = new IntSetting(iniFile, OPTIONS, "DoubleTapInterval", 30);
             Win8CompatMode = new StringSetting(iniFile, OPTIONS, "Win8Compat", "No");
+            LadderMode = new BoolSetting(iniFile, OPTIONS, "LadderMode", false);
 
             PlayerName = new StringSetting(iniFile, MULTIPLAYER, "Handle", string.Empty);
 
@@ -122,6 +123,8 @@ namespace ClientCore
         public IntSetting DetailLevel { get; private set; }
         public StringSetting Renderer { get; private set; }
         public BoolSetting WindowedMode { get; private set; }
+
+        public BoolSetting LadderMode { get; set; }
         public BoolSetting BorderlessWindowedMode { get; private set; }
         public BoolSetting CustonIngameResolution { get; private set; }
         

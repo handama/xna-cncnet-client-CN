@@ -48,7 +48,7 @@ namespace DTAClient.Domain.Multiplayer.CnCNet
 
         private static int GetCnCNetPlayerCount()
         {
-            try
+            /*try
             {
                 WebClient client = new WebClient();
 
@@ -80,9 +80,9 @@ namespace DTAClient.Domain.Multiplayer.CnCNet
                 return numGames;
             }
             catch
-            {
+            {*/
                 return -1;
-            }
+           /* }*/
         }
     }
 

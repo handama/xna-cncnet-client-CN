@@ -39,7 +39,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                     s => HideMapList()),
                 new ChatBoxCommand("SHOWMAPS", "展示地图列表(仅房主)", true,
                     s => ShowMapList()),
-                new ChatBoxCommand("FRAMESENDRATE", "改变阶延迟/帧发送速率(默认7)(仅房主)", true,
+                new ChatBoxCommand("FRAMESENDRATE", "改变阶延迟/帧发送速率(默认2)(仅房主)", true,
                     s => SetFrameSendRate(s)),
                 new ChatBoxCommand("MAXAHEAD", "改变最大提前(默认0)(仅房主)", true,
                     s => SetMaxAhead(s)),
@@ -84,7 +84,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         protected Texture2D[] PingTextures;
         protected TopBar TopBar;
 
-        protected int FrameSendRate { get; set; } = 7;
+        protected int FrameSendRate { get; set; } = 2;
 
         /// <summary>
         /// Controls the MaxAhead parameter. The default value of 0 means that 

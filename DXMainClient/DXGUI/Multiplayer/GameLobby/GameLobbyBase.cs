@@ -211,6 +211,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         /// Controls whether Red Alert 2 mode is enabled for CnCNet YR. 
         /// </summary>
         protected bool RA2Mode = false;
+
+        protected bool LadderMode = false;
 #endif
 
         private readonly bool isMultiplayer = false;
@@ -1174,6 +1176,20 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             else
                 return false;
         }
+
+        protected bool CheckLadderMode()
+        {
+            // TODO obsolete, remove when it's certain that this is not needed anywhere
+            if (GameMode.Name == "RA2 Ladder" || GameMode.Name == "YR Ladder")
+                LadderMode = true;
+            else
+                LadderMode = false;
+
+            if (LadderMode == true)
+                return true;
+            else
+                return false;
+        }
 #endif
 
         private int GetSpectatorSideIndex() => SideCount + RandomSelectorCount;
@@ -1823,10 +1839,19 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             GameProcessLogic.GameProcessExited += GameProcessExited_Callback;
             CreateRa2FileList();
             CheckRa2Mode();
-            if (RA2Mode == true)
+            CheckLadderMode();
+            if (RA2Mode && !LadderMode)
                 CopyRa2Files();
             else
                 DeleteRa2Files();
+
+            var settings = new IniFile(ClientConfiguration.Instance.SettingsIniName);
+            if (LadderMode)
+                settings.SetBooleanValue("Options", "LadderMode", true);
+            else
+                settings.SetBooleanValue("Options", "LadderMode", false);
+            settings.WriteIniFile();
+
             GameProcessLogic.StartGameProcess();
             UpdateDiscordPresence(true);
         }
@@ -1853,6 +1878,10 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             CopyPlayerDataToUI();
 
             DeleteRa2Files();
+
+            var settings = new IniFile(ClientConfiguration.Instance.SettingsIniName);
+            settings.SetBooleanValue("Options", "LadderMode", false);
+            settings.WriteIniFile();
 
             if (ClientConfiguration.Instance.ProcessScreenshots)
             {

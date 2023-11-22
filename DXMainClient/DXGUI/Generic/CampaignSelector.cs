@@ -321,6 +321,7 @@ namespace DTAClient.DXGUI.Generic
             }
 
             UserINISettings.Instance.Difficulty.Value = trbDifficultySelector.Value;
+            UserINISettings.Instance.LadderMode.Value = false;
             UserINISettings.Instance.SaveSettings();
 
             ((MainMenuDarkeningPanel)Parent).Hide();
