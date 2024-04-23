@@ -329,7 +329,10 @@ namespace DTAClient.DXGUI.Generic
             discordHandler?.UpdatePresence(mission.GUIName, difficultyName, mission.IconPath, true);
             GameProcessLogic.GameProcessExited += GameProcessExited_Callback;
 
-            GameProcessLogic.StartGameProcess();
+            if (mission.KutuzovMission)
+                GameProcessLogic.StartGameProcess("kutuzov");
+            else
+                GameProcessLogic.StartGameProcess();
         }
 
         private void GameProcessExited_Callback()

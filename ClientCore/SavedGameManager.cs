@@ -11,6 +11,7 @@ namespace ClientCore
     public static class SavedGameManager
     {
         private const string SAVED_GAMES_DIRECTORY = "Saved Games";
+        private const string KUTUZOV_SAVED_GAMES_DIRECTORY = "Kutuzov Saved Games";
 
         private static bool saveRenameInProgress = false;
 
@@ -63,6 +64,10 @@ namespace ClientCore
         private static string GetSaveGameDirectoryPath()
         {
             return ProgramConstants.GamePath + SAVED_GAMES_DIRECTORY;
+        }
+        private static string GetKutuzovSaveGameDirectoryPath()
+        {
+            return ProgramConstants.GamePath + KUTUZOV_SAVED_GAMES_DIRECTORY;
         }
 
         /// <summary>

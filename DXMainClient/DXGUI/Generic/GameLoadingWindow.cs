@@ -18,6 +18,7 @@ namespace DTAClient.DXGUI.Generic
     public class GameLoadingWindow : XNAWindow
     {
         private const string SAVED_GAMES_DIRECTORY = "Saved Games";
+        private const string KUTUZOV_SAVED_GAMES_DIRECTORY = "Kutuzov Saved Games";
 
         public GameLoadingWindow(WindowManager windowManager, DiscordHandler discordHandler) : base(windowManager)
         {
@@ -131,7 +132,10 @@ namespace DTAClient.DXGUI.Generic
             Enabled = false;
             GameProcessLogic.GameProcessExited += GameProcessExited_Callback;
 
-            GameProcessLogic.StartGameProcess();
+            if (sg.KutuzovMission)
+                GameProcessLogic.StartGameProcess("kutuzov");
+            else
+                GameProcessLogic.StartGameProcess();
         }
 
         private void BtnDelete_LeftClick(object sender, EventArgs e)
@@ -153,9 +157,20 @@ namespace DTAClient.DXGUI.Generic
         {
             SavedGame sg = savedGames[lbSaveGameList.SelectedIndex];
 
-            Logger.Log("Deleting saved game " + sg.FileName);
-            File.Delete(ProgramConstants.GamePath + SAVED_GAMES_DIRECTORY + Path.DirectorySeparatorChar + sg.FileName);
-            ListSaves();
+            if (sg.KutuzovMission)
+            {
+                Logger.Log("Deleting saved game " + sg.FileName);
+                File.Delete(ProgramConstants.GamePath + KUTUZOV_SAVED_GAMES_DIRECTORY + Path.DirectorySeparatorChar + sg.FileName);
+                ListSaves();
+            }
+            else
+            {
+                Logger.Log("Deleting saved game " + sg.FileName);
+                File.Delete(ProgramConstants.GamePath + SAVED_GAMES_DIRECTORY + Path.DirectorySeparatorChar + sg.FileName);
+                ListSaves();
+            }
+
+
         }
         
         private void GameProcessExited_Callback()
@@ -184,9 +199,19 @@ namespace DTAClient.DXGUI.Generic
                 SAVED_GAMES_DIRECTORY + Path.DirectorySeparatorChar,
                 "*.SAV", SearchOption.TopDirectoryOnly);
 
+
+            string[] fileskutuzov = Directory.GetFiles(ProgramConstants.GamePath +
+                KUTUZOV_SAVED_GAMES_DIRECTORY + Path.DirectorySeparatorChar,
+                "*.SAV", SearchOption.TopDirectoryOnly);
+
             foreach (string file in files)
             {
                 ParseSaveGame(file);
+            }
+
+            foreach (string file in fileskutuzov)
+            {
+                ParseSaveGame(file, "kutuzov");
             }
 
             savedGames = savedGames.OrderBy(sg => sg.LastModified.Ticks).ToList();
@@ -201,13 +226,25 @@ namespace DTAClient.DXGUI.Generic
             }
         }
 
-        private void ParseSaveGame(string fileName)
+        private void ParseSaveGame(string fileName, string missionType = "none")
         {
             string shortName = Path.GetFileName(fileName);
 
             SavedGame sg = new SavedGame(shortName);
-            if (sg.ParseInfo())
-                savedGames.Add(sg);
+
+            if (missionType == "kutuzov")
+            {
+                sg.KutuzovMission = true;
+
+                if (sg.ParseInfo("kutuzov"))
+                    savedGames.Add(sg);
+            }
+            else
+            {
+                if (sg.ParseInfo())
+                    savedGames.Add(sg);
+            }
+               
         }
     }
 }

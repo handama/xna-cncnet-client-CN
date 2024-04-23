@@ -20,6 +20,7 @@ namespace DTAClient.Domain
             RequiredAddon = iniFile.GetBooleanValue(sectionName, "RequiredAddon", false);
             Enabled = iniFile.GetBooleanValue(sectionName, "Enabled", true);
             BuildOffAlly = iniFile.GetBooleanValue(sectionName, "BuildOffAlly", false);
+            KutuzovMission = iniFile.GetBooleanValue(sectionName, "KutuzovMission", false);
 
             GUIDescription = GUIDescription.Replace("@", Environment.NewLine);
         }
@@ -33,6 +34,7 @@ namespace DTAClient.Domain
         public string FinalMovie { get; private set; }
         public bool RequiredAddon { get; private set; }
         public bool Enabled { get; private set; }
+        public bool KutuzovMission { get; private set; }
         public bool BuildOffAlly { get; private set; }
     }
 }

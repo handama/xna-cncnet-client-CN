@@ -34,7 +34,7 @@ namespace ClientGUI
         /// </summary>
         /// 
 
-        public static void StartGameProcess()
+        public static void StartGameProcess(string missionType = "none")
         {
             Logger.Log("About to launch main game executable.");
 
@@ -70,10 +70,16 @@ namespace ClientGUI
                     PhobosECLP = " " + ProgramConstants.PhobosPrefix + PhobosVersion;
                 }
             }
-            
+
             if (settings.GetBooleanValue("Options", "LadderMode", false))
             {
                 gameExecutableName = "gamemd-spawn.exe";
+                additionalExecutableName = " -SPAWN";
+
+            }
+            if (missionType == "kutuzov")
+            {
+                gameExecutableName = "gamemd-kutuzov.exe";
                 additionalExecutableName = " -SPAWN";
             }
 

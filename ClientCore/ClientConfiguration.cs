@@ -22,7 +22,7 @@ namespace ClientCore
         private IniFile gameOptions_ini;
         private IniFile DTACnCNetClient_ini;
         private IniFile clientDefinitionsIni;
-
+         
 
         protected ClientConfiguration()
         {

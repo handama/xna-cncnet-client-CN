@@ -890,6 +890,16 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                     }
                 }
 
+                if ((GameMode.Name == "RA2 Ladder" || GameMode.Name == "YR Ladder") && ddplayerNumbers.SelectedItem.Text.Contains("-"))
+                {
+                    if (GameMode.Maps[i].MaxPlayers < playerCount)
+                        continue;
+
+                    mapList.Add(GameMode.Maps[i]);
+                    continue;
+                }
+
+
                 if (!ddplayerNumbers.SelectedItem.Text.Contains("-"))
                 {
                     if (GameMode.Maps[i].MaxPlayers != int.Parse(ddplayerNumbers.SelectedItem.Text))
