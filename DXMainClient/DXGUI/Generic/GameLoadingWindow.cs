@@ -116,6 +116,15 @@ namespace DTAClient.DXGUI.Generic
             sw.WriteLine("SidebarHack=" + ClientConfiguration.Instance.SidebarHack);
             sw.WriteLine("Firestorm=No");
             sw.WriteLine("GameSpeed=" + UserINISettings.Instance.GameSpeed);
+
+            if (sg.KutuzovMission)
+            {
+                sw.WriteLine("IsSinglePlayer=Yes");
+                sw.WriteLine("BuildOffAlly=True"); 
+            }
+
+
+
             sw.WriteLine();
             sw.Close();
 

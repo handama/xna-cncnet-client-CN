@@ -890,7 +890,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                     }
                 }
 
-                if ((GameMode.Name == "RA2 Ladder" || GameMode.Name == "YR Ladder") && ddplayerNumbers.SelectedItem.Text.Contains("-"))
+                if ((GameMode.Name == "RA2 Ladder" || GameMode.Name == "YR Ladder" || GameMode.Name == "StealingHotPot") && ddplayerNumbers.SelectedItem.Text.Contains("-"))
                 {
                     if (GameMode.Maps[i].MaxPlayers < playerCount)
                         continue;
